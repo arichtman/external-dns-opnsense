@@ -1,0 +1,17 @@
+[package]
+name = "external-dns-opnsense"
+version = "0.1.0"
+edition = "2021"
+authors = ["Richtman, Ariel"]
+description = "Extension for Kubernetes external-dns operator to manage records in OPNsense"
+documentation = "https://github.com/arichtman/external-dns-opnsense"
+repository = "https://github.com/arichtman/external-dns-opnsense"
+homepage = "https://github.com/arichtman/external-dns-opnsense"
+readme = "README.md"
+license = "GPL-3.0-only"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rocket = "0.5.0"
+serde = "1.0.196"
