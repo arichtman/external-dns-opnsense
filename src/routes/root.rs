@@ -1,9 +1,6 @@
-use crate::responses::Response;
-#[get("/")]
-pub fn get() -> String {
-    Response {
-        status: rocket::http::Status::Ok,
-        message: "Nothing to see here...".into(),
-    }
-    .to_string()
+use rocket::response::status::BadRequest;
+#[get("/", format = "json")]
+pub fn get() -> Result<String, BadRequest<String>> {
+    // Ok("Sure, whatever".into())
+    Err(BadRequest("no bueno".into()))
 }
