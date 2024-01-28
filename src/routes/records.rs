@@ -8,9 +8,7 @@ use serde_json::{json, Value};
 use super::AppState;
 
 pub fn app() -> Router<AppState> {
-    Router::new()
-        .route("/", get(records_get))
-        .route("/", post(records_post))
+    Router::new().route("/", get(records_get).post(records_post))
 }
 
 pub async fn records_get(State(state): State<AppState>) -> impl IntoResponse {}

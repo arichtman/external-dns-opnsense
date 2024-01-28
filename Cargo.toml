@@ -14,7 +14,17 @@ license = "GPL-3.0-only"
 
 [dependencies]
 axum = "0.7.4"
+log = "0.4.20"
 serde = { version = "1.0.196", features = ["derive"] }
 serde_json = "1.0.112"
+simple_logger = "4.3.3"
 tokio = { version = "1.35.1", features = ["rt-multi-thread"] }
 tower = "0.4.13"
+
+[dependencies.clap]
+version = "4.*"
+features = ["derive", "env"]
+
+[[bin]]
+name = "edns"
+path = "src/main.rs"
