@@ -10,6 +10,12 @@ cargo watch --watch src/ --quiet --clear --shell bacon
 cargo watch --watch src/ --quiet --clear --exec test
 ```
 
+## Present state
+
+- Reqwest client is held in shared state but may not be pooling/holding connections
+- Port on the request isn't set but protocol is in the URL, unclear if this is fatal
+- DNS is failing to resolve my opnsense server but that could well be client issues
+
 ## Notes
 
 - Tried to add `rust-toolchain.toml` to get nightly `rustfmt` so I could set module granularity.
