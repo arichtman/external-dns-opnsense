@@ -5,11 +5,20 @@ External-DNS webhook extension for OPNsense
 Very much a work in progress and a learning experience.
 
 ```
-bacon
 cargo watch --watch src/ --quiet --clear --exec run
 cargo watch --watch src/ --quiet --clear --shell bacon
 cargo watch --watch src/ --quiet --clear --exec test
 ```
+
+## Notes
+
+- Tried to add `rust-toolchain.toml` to get nightly `rustfmt` so I could set module granularity.
+  I didn't particularly want everything nightly.
+  It may be possible to just add `+nightly` argument to the format call.
+  However all the discussion I turned up was for VSCode,
+  and I can't locate any options for in-repo Helix config.
+  Nightly also broke compilation,
+  [issue](https://github.com/tokio-rs/axum/issues/2407)
 
 ## References
 

@@ -1,4 +1,5 @@
-use axum::{http::StatusCode, response::IntoResponse, response::Response};
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
 
 pub enum OPNsenseError {
     AuthFail,
