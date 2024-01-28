@@ -16,3 +16,4 @@ cargo watch -x run
 - [EDNS OpenAPI spec issue](https://github.com/kubernetes-sigs/external-dns/issues/4138)
 - [OPNsense Unbound API reference](https://docs.opnsense.org/development/api/core/unbound.html)
 - [OPNsense forum post](https://forum.opnsense.org/index.php?topic=25823.0)
+- [Rocket tutorial](https://dev.to/davidedelpapa/series/9626) and [repository](https://github.com/davidedelpapa/rocket-tut)
