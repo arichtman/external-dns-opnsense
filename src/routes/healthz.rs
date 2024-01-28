@@ -1,8 +1,9 @@
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::Router;
+use super::AppState;
 
-pub fn app() -> Router {
+pub fn app() -> Router<AppState> {
     Router::new()
         .route("/healthz", get(healthz_get))
 }

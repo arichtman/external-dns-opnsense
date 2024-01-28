@@ -8,9 +8,17 @@ mod routes;
 #[tokio::main]
 async fn main() {
     let listener = TcpListener::bind("[::]:8888").await.unwrap();
-    axum::serve(listener, routes::app().into_make_service())
-        .await
-        .unwrap();
+    axum::serve(
+        listener,
+        routes::app(
+            "my-api-key".into(),
+            "shhh".into(),
+            "http://localhost:8000".into(),
+        )
+        .into_make_service(),
+    )
+    .await
+    .unwrap();
 }
 
 // Ref: https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs
@@ -25,7 +33,11 @@ mod tests {
 
     #[tokio::test]
     async fn get_root() {
-        let app = app();
+        let app = app(
+            "my-api-key".into(),
+            "shhh".into(),
+            "http://localhost:8000".into(),
+        );
         let response = app
             .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
             .await

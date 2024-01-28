@@ -1,17 +1,22 @@
+use axum::extract::State;
 use axum::response::{ErrorResponse, IntoResponse};
 use axum::routing::{get, post};
 use axum::Json;
 use axum::Router;
 use serde_json::{json, Value};
 
-pub fn app() -> Router {
+use super::AppState;
+
+pub fn app() -> Router<AppState> {
     Router::new()
         .route("/", get(root_get))
         .route("/", post(root_post))
+    // .with_state::<AppState>(())
+    // .with_state(AppState)
 }
 
-pub async fn root_get() -> impl IntoResponse {
-    "root get!"
+pub async fn root_get(State(state): State<AppState>) -> impl IntoResponse {
+    format!("root get!\n{0}", state.api_key_id)
 }
 
 // TODO: Work out what the structure DomainFilter is and how it's presented
