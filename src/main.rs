@@ -1,6 +1,7 @@
 // TODO: Remove for production
 #![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
 
+use crate::data_structs::Endpoints;
 use clap::{arg, command, Parser};
 
 use log::{debug, error, info, trace, warn};
@@ -24,6 +25,17 @@ struct Cli {
 
 use tokio::net::TcpListener;
 
+pub mod data_structs;
+// TODO: I _think_ we want ownership here cause we don't want lifetime issues when other stuff drops out of scope
+#[derive(Clone, Default, Debug)]
+pub struct AppState {
+    api_key_id: String,
+    api_key_secret: String,
+    api_url: String,
+    api_domains: Vec<String>,
+    endpoints: Option<Endpoints>,
+}
+
 mod routes;
 #[tokio::main]
 async fn main() {
@@ -40,19 +52,17 @@ async fn main() {
     // TODO: Learn best logging practices.
     // Specifically: The debug here redundifies the info level and should we use "{:?}" or "{:#?}"
     debug!("{:?}", cli);
+    let state = AppState {
+        api_key_id: cli.api_key_id,
+        api_key_secret: cli.api_key_secret,
+        api_url: cli.api_url,
+        api_domains: cli.api_domain,
+        ..Default::default()
+    };
     let listener = TcpListener::bind("[::]:8888").await.unwrap();
-    axum::serve(
-        listener,
-        routes::app(
-            cli.api_key_id,
-            cli.api_key_secret,
-            cli.api_url,
-            cli.api_domain,
-        )
-        .into_make_service(),
-    )
-    .await
-    .unwrap();
+    axum::serve(listener, routes::app(state).into_make_service())
+        .await
+        .unwrap();
 }
 
 // Ref: https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs
@@ -67,12 +77,9 @@ mod tests {
 
     #[tokio::test]
     async fn get_root() {
-        let app = app(
-            "my-api-key".into(),
-            "shhh".into(),
-            "http://localhost:8000".into(),
-            vec![],
-        );
+        let app = app(AppState {
+            ..Default::default()
+        });
         let response = app
             .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
             .await

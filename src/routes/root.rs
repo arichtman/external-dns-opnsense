@@ -14,8 +14,9 @@ pub fn app() -> Router<AppState> {
 
 // TODO: Allow runtime configuration of domains
 // TODO: Do we add wildcards? Are subdomains obviated by TLDs?
-pub async fn root_get(State(state): State<AppState>) -> Result<Json<Value>> {
-    Ok(Json::from(
-        json!({"filters": [ "local", "cluster.local", "svc.cluster.local"]}),
-    ))
+pub async fn root_get(State(state): State<AppState>) -> Result<Json<Vec<String>>> {
+    Ok(Json::from(state.api_domains))
+    // Ok(Json::from(
+    //     json!({"filters": [ "local", "cluster.local", "svc.cluster.local"]}),
+    // ))
 }

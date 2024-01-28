@@ -1,5 +1,5 @@
 // Ref: https://github.com/jeremychone-channel/rust-axum-course/blob/main/src/error.rs
-use crate::routes::webhook::*;
+use crate::data_structs::Endpoint;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
