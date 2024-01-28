@@ -3,11 +3,11 @@ use axum::Router;
 
 use crate::AppState;
 
-pub mod adjustendpoints;
+mod adjustendpoints;
 mod error;
-pub mod healthz;
-pub mod records;
-pub mod root;
+mod healthz;
+mod records;
+mod root;
 
 pub fn app(state: AppState) -> Router {
     // TODO: it feels weird nesting them here but it's marginally less boilerplatey

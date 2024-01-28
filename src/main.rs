@@ -1,9 +1,13 @@
 // TODO: Remove for production
 #![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
 
+use std::str::FromStr;
+
 use crate::data_structs::Endpoints;
 use clap::{arg, command, Parser};
-
+use reqwest::{header, Url};
+use tokio::net::TcpListener;
+mod data_structs;
 use log::{debug, error, info, trace, warn};
 
 // TODO: Update env use when issue is resolved https://github.com/clap-rs/clap/issues/3221
@@ -23,17 +27,65 @@ struct Cli {
     verbose: u8,
 }
 
-use tokio::net::TcpListener;
-
-pub mod data_structs;
 // TODO: I _think_ we want ownership here cause we don't want lifetime issues when other stuff drops out of scope
+// TODO: Can/should we make this private?
 #[derive(Clone, Default, Debug)]
 pub struct AppState {
+    api_client: OPNsenseClient,
+    api_domains: Vec<String>,
+    endpoints: Endpoints,
+}
+
+// TODO: Look at moving the URL parsing maybe earlier in the setup?
+// api_url could be Url type but Default isn't implemented for reqwest::Url
+// reqwest::Url::from_str(api_url).unwrap(),
+#[derive(Clone, Default, Debug)]
+struct OPNsenseClient {
+    client: reqwest::Client,
     api_key_id: String,
     api_key_secret: String,
     api_url: String,
-    api_domains: Vec<String>,
-    endpoints: Option<Endpoints>,
+}
+
+// TODO: We _could_ enumerate the REST resources, but honestly it's easier as a String
+impl OPNsenseClient {
+    fn new(api_key_id: String, api_key_secret: String, api_url: String) -> OPNsenseClient {
+        OPNsenseClient {
+            client: reqwest::ClientBuilder::new().build().unwrap(),
+            api_key_id,
+            api_key_secret,
+            api_url,
+            ..Default::default()
+        }
+    }
+    async fn get(&self, resource: &str) -> Result<reqwest::Response, reqwest::Error> {
+        self.act(reqwest::Method::GET, resource, None).await
+    }
+    async fn post(
+        &self,
+        resource: &str,
+        body: Option<String>,
+    ) -> Result<reqwest::Response, reqwest::Error> {
+        self.act(reqwest::Method::POST, resource, body).await
+    }
+    async fn act(
+        &self,
+        method: reqwest::Method,
+        resource: &str,
+        body: Option<String>,
+    ) -> Result<reqwest::Response, reqwest::Error> {
+        let req_builder = self
+            .client
+            .request(method, format!("{0}/{resource}", self.api_url));
+        let req_builder = req_builder.basic_auth(&self.api_key_id, Some(&self.api_key_secret));
+        let req = match body {
+            Some(s) => req_builder.body(s),
+            None => req_builder,
+        }
+        .build()
+        .unwrap();
+        self.client.execute(req).await
+    }
 }
 
 mod routes;
@@ -52,13 +104,13 @@ async fn main() {
     // TODO: Learn best logging practices.
     // Specifically: The debug here redundifies the info level and should we use "{:?}" or "{:#?}"
     debug!("{:?}", cli);
+    let client = OPNsenseClient::new(cli.api_key_id, cli.api_key_secret, cli.api_url);
     let state = AppState {
-        api_key_id: cli.api_key_id,
-        api_key_secret: cli.api_key_secret,
-        api_url: cli.api_url,
+        api_client: client,
         api_domains: cli.api_domain,
         ..Default::default()
     };
+    debug!("{:?}", state);
     let listener = TcpListener::bind("[::]:8888").await.unwrap();
     axum::serve(listener, routes::app(state).into_make_service())
         .await

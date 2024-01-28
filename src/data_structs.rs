@@ -13,7 +13,7 @@ pub struct Changes {
     delete: Endpoints,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct Endpoints {
     items: Vec<Endpoint>,
 }
