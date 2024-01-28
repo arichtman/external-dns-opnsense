@@ -1,5 +1,5 @@
 [package]
-name = "external-dns-opnsense"
+name = "external_dns_opnsense"
 version = "0.1.0"
 edition = "2021"
 authors = ["Richtman, Ariel"]

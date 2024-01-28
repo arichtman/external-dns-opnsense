@@ -1,3 +1,4 @@
+use rocket::get;
 use serde::Serialize;
 #[derive(Serialize)]
 struct ResponseBody {

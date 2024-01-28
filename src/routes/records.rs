@@ -1,3 +1,4 @@
+use rocket::{get, post};
 #[get("/records")]
 pub fn get() -> &'static str {
     "{}"
