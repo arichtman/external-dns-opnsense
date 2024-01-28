@@ -7,6 +7,7 @@ Very much a work in progress and a learning experience.
 ```
 bacon
 cargo watch --watch src/ --quiet --clear --exec run
+cargo watch --watch src/ --quiet --clear --shell bacon
 cargo watch --watch src/ --quiet --clear --exec test
 ```
 

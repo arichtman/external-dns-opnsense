@@ -3,42 +3,35 @@
 
 use axum::response::IntoResponse;
 use axum::response::IntoResponseParts;
-use axum::routing::get;
-use axum::Router;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
+mod routes;
 #[tokio::main]
 async fn main() {
     let listener = TcpListener::bind("127.0.0.1:8888").await.unwrap();
-    axum::serve(listener, app().into_make_service())
+    axum::serve(listener, routes::app().into_make_service())
         .await
         .unwrap();
-    // let address = SocketAddr::from(([127, 0, 0, 1], 8888));
-    // axum::Server::bind(&address)
-    //     .serve(routes.into_make_service())
-    //     .await
-    //     .unwrap();
 }
 
-async fn root_get() -> impl IntoResponse {
-    "root get!"
-}
-
-fn app() -> Router {
-    Router::new().route("/", get(root_get))
-}
-
+// Ref: https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::routes::app;
     use axum::body::Body;
     use axum::extract::Request;
+    use axum::http::StatusCode;
     use tower::util::ServiceExt;
 
     #[tokio::test]
     async fn get_root() {
         let app = app();
-        let response = app.oneshot(Request::builder().uri("/").body(Body::empty()).unwrap());
+        let response = app
+            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
     }
 }
