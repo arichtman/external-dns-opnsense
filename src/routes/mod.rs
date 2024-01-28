@@ -2,6 +2,7 @@ use axum::routing::{get, post};
 use axum::Router;
 
 pub mod adjustendpoints;
+mod error;
 pub mod healthz;
 pub mod records;
 pub mod root;

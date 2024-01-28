@@ -2,24 +2,24 @@
 
 use std::collections::HashMap;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 // TODO: see if we can use the ! whole-file approach
-#[derive(Deserialize, Debug)]
-struct Changes {
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Changes {
     create: Endpoints,
     updateOld: Endpoints,
     updateNew: Endpoints,
     delete: Endpoints,
 }
 
-#[derive(Deserialize, Debug)]
-struct Endpoints {
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Endpoints {
     items: Vec<Endpoint>,
 }
 
-#[derive(Deserialize, Debug)]
-struct Endpoint {
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Endpoint {
     dnsName: String,
     // targets: Vec<Target>,
     targets: Vec<String>,
@@ -31,14 +31,14 @@ struct Endpoint {
 }
 
 // TODO: this could just be a vec of tuples...
-#[derive(Deserialize, Debug)]
-struct ProviderSpecificProperty {
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct ProviderSpecificProperty {
     name: String,
     value: String,
 }
 
-#[derive(Deserialize, Debug)]
-struct Target {
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Target {
     // Type is a reserved keyword
     type_: String,
 }

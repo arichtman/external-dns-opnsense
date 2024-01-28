@@ -3,7 +3,6 @@
 
 use tokio::net::TcpListener;
 
-mod error;
 mod routes;
 #[tokio::main]
 async fn main() {
