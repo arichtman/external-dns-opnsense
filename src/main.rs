@@ -1,15 +1,12 @@
 // TODO: Remove for production
 #![allow(unused)]
 
-use axum::response::IntoResponse;
-use axum::response::IntoResponseParts;
-use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
 mod routes;
 #[tokio::main]
 async fn main() {
-    let listener = TcpListener::bind("127.0.0.1:8888").await.unwrap();
+    let listener = TcpListener::bind("[::]:8888").await.unwrap();
     axum::serve(listener, routes::app().into_make_service())
         .await
         .unwrap();
