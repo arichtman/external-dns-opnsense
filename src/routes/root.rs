@@ -1,4 +1,5 @@
 use serde::Serialize;
+use serde_json::to_string as json;
 #[derive(Serialize)]
 struct ResponseBody {
     key: String,
@@ -11,5 +12,5 @@ pub fn get() -> String {
         key: "value".into(),
         another_key: 5,
     };
-    serde_json::to_string(&response).unwrap()
+    json(&response).unwrap()
 }
