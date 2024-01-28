@@ -6,6 +6,8 @@ mod test;
 #[macro_use]
 extern crate rocket;
 
+use routes::*;
+
 #[launch]
 fn rocket_builder() -> _ {
     rocket::build()
@@ -13,11 +15,11 @@ fn rocket_builder() -> _ {
         .mount(
             "/",
             routes![
-                routes::root::get,
-                routes::records::get,
-                routes::records::post,
-                routes::adjustendpoints::post,
-                routes::healthz::get
+                root::get,
+                records::get,
+                records::post,
+                adjustendpoints::post,
+                healthz::get
             ],
         )
 }

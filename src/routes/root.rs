@@ -1,16 +1,9 @@
-use serde::Serialize;
-use serde_json::to_string as json;
-#[derive(Serialize)]
-struct ResponseBody {
-    key: String,
-    another_key: u8,
-}
-
+use crate::responses::Response;
 #[get("/")]
 pub fn get() -> String {
-    let response = ResponseBody {
-        key: "value".into(),
-        another_key: 5,
-    };
-    json(&response).unwrap()
+    Response {
+        status: rocket::http::Status::Ok,
+        message: "Nothing to see here...".into(),
+    }
+    .to_string()
 }
