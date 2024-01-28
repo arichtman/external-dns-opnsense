@@ -4,6 +4,11 @@ External-DNS webhook extension for OPNsense
 
 Very much a work in progress and a learning experience.
 
+```
+bacon
+cargo watch -x run
+```
+
 ## References
 
 - [EDNS FAQ](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/faq.md)

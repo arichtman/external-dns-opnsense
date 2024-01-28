@@ -1,9 +1,24 @@
+use serde::Serialize;
+
+#[cfg(test)]
+mod test;
+
 #[macro_use]
 extern crate rocket;
 
+#[derive(Serialize)]
+struct ResponseBody {
+    key: String,
+    another_key: u8,
+}
+
 #[get("/")]
-fn root() -> &'static str {
-    "{}"
+fn root() -> String {
+    let response = ResponseBody {
+        key: "value".into(),
+        another_key: 5,
+    };
+    serde_json::to_string(&response).unwrap()
 }
 #[get("/records")]
 fn records() -> &'static str {
