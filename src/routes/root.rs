@@ -1,3 +1,4 @@
+use crate::routes::error::Result;
 use axum::extract::State;
 use axum::response::{ErrorResponse, IntoResponse};
 use axum::routing::{get, post};
@@ -11,7 +12,10 @@ pub fn app() -> Router<AppState> {
     Router::new().route("/", get(root_get))
 }
 
-pub async fn root_get(State(state): State<AppState>) -> impl IntoResponse {
-    // Should be {"filters": [ "www.foo.com", "bing.com"]}
-    format!("root get!\n{0}", state.api_key_id)
+// TODO: Allow runtime configuration of domains
+// TODO: Do we add wildcards? Are subdomains obviated by TLDs?
+pub async fn root_get(State(state): State<AppState>) -> Result<Json<Value>> {
+    Ok(Json::from(
+        json!({"filters": [ "local", "cluster.local", "svc.cluster.local"]}),
+    ))
 }
