@@ -1,8 +1,9 @@
-use self::healthz::healthz_get;
 use axum::routing::{get, post};
 use axum::Router;
 
+pub mod adjustendpoints;
 pub mod healthz;
+pub mod records;
 pub mod root;
 pub mod webhook;
 
@@ -22,5 +23,7 @@ pub fn app(api_key_id: String, api_key_secret: String, api_url: String) -> Route
     Router::new()
         .merge(root::app())
         .merge(healthz::app())
+        .nest("/adjustendpoints", adjustendpoints::app())
+        .nest("/records", records::app())
         .with_state(state)
 }
