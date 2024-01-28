@@ -19,6 +19,11 @@ cargo watch --watch src/ --quiet --clear --exec test
   and I can't locate any options for in-repo Helix config.
   Nightly also broke compilation,
   [issue](https://github.com/tokio-rs/axum/issues/2407)
+- I'm some way towards putting the openapi fuzzer into the development environment.
+  It's been a tremendous pain and the flake looks like shit now.
+  Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
+- There is a crate for Axum Prometheus.
+  I should get to that one day...
 
 ## References
 

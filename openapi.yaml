@@ -1,0 +1,152 @@
+---
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: External DNS Webhook Server
+  description: >-
+    Implements the external DNS webhook endpoints.
+  contact:
+    name: Author Name
+    email: author@email.tld
+    url: https://author.website.tld/
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      description: Used by kubernetes to make sure service is ok.
+      operationId: healthz
+      responses:
+        '200':
+          description: Positive response
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: ok
+
+  /:
+    get:
+      summary: >-
+        Initialisation and negotiates headers and returns domain
+        filter.
+      description: |
+        Initialisation and negotiates headers and returns domain
+        filter.
+      operationId: negotiate
+      responses:
+        '200':
+          description: Positive response
+          content:
+            application/external.dns.webhook+json;version=1:
+              schema:
+                type: object
+                properties:
+                  filters:
+                    type: array
+                    items:
+                      type: string
+        '500':
+          description: Failure
+
+  /records:
+    get:
+      summary: Returns the current records.
+      description: Get the current records from OpenWRT and return them.
+      operationId: getRecords
+      responses:
+        '200':
+          description: Positive response
+          content:
+            application/external.dns.webhook+json;version=1:
+              schema:
+                $ref: '#/components/schemas/endpoints'
+        '500':
+          description: Failure
+
+    post:
+      summary: Applies the changes.
+      description: Set the records in OpenWRT based on those supplied here.
+      operationId: setRecords
+      requestBody:
+        required: true
+        content:
+          application/external.dns.webhook+json;version=1:
+            schema:
+              $ref: '#/components/schemas/changes'
+      responses:
+        '204':
+          description: Positive response
+        '500':
+          description: Failure
+
+  /adjustendpoints:
+
+    post:
+      summary: Executes the AdjustEndpoints method.
+      description: Set the records in OpenWRT based on those supplied here.
+      operationId: adjustRecords
+      requestBody:
+        required: true
+        content:
+          application/external.dns.webhook+json;version=1:
+            schema:
+              $ref: '#/components/schemas/endpoints'
+      responses:
+        '200':
+          description: Positive response
+          content:
+            application/external.dns.webhook+json;version=1:
+              schema:
+                $ref: '#/components/schemas/endpoints'
+        '500':
+          description: Failure
+
+components:
+  schemas:
+    endpoints:
+      type: array
+      items:
+        type: object
+        properties:
+          dnsName:
+            type: string
+          targets:
+            type: string
+          recordType:
+            type: string
+          setIdentifier:
+            type: string
+          recordTTL:
+            type: integer
+            format: int64
+          labels:
+            type: object
+            additionalProperties:
+              type: string
+          providerSpecific:
+            type: array
+            items:
+              $ref: '#/components/schemas/providerSpecificProperty'
+
+    providerSpecificProperty:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+
+    changes:
+      type: object
+      properties:
+        create:
+          $ref: '#/components/schemas/endpoints'
+        updateOld:
+          $ref: '#/components/schemas/endpoints'
+        updateNew:
+          $ref: '#/components/schemas/endpoints'
+        delete:
+          $ref: '#/components/schemas/endpoints'

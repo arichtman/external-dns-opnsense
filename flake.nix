@@ -34,9 +34,24 @@
       });
     in
     {
-      devShells = forEachSupportedSystem ({ pkgs }: {
+      devShells = forEachSupportedSystem ({ pkgs }: rec {
+        # TODO: There's no way this is the right place to put this...
+        openapi-fuzzer = pkgs.rustPlatform.buildRustPackage rec {
+          pname = "openapi-fuzzer";
+          version = "v0.2.0";
+          src = pkgs.fetchFromGitHub {
+            owner = "arichtman";
+            repo = pname;
+            rev = "update-lockfile";
+            # owner = "matusf";
+            # rev = version;
+            hash = "sha256-EHKnQ0dbeIQv/ZMcVEwaZBAMDBoiExpKWbLLNT5eo0U=";
+          };
+          cargoSha256 = "sha256-wxT+ztpnLGd6bAr9FfI4MlFPtGQu1qBYqS97AYHrdRc=";
+        };
         default = pkgs.mkShell {
           packages = with pkgs; [
+            # openapi-fuzzer
             rustToolchain
             openssl
             pkg-config
@@ -45,6 +60,7 @@
             cargo-watch
             rust-analyzer
             bacon
+            yq-go
           ];
         };
       });
