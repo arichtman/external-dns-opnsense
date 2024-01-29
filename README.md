@@ -32,13 +32,10 @@ print_type_of(&override_list[0]);
 
 ## Notes
 
-- Tried to add `rust-toolchain.toml` to get nightly `rustfmt` so I could set module granularity.
-  I didn't particularly want everything nightly.
-  It may be possible to just add `+nightly` argument to the format call.
-  However all the discussion I turned up was for VSCode,
-  and I can't locate any options for in-repo Helix config.
-  Nightly also broke compilation,
-  [issue](https://github.com/tokio-rs/axum/issues/2407)
+- There are quite a few Rust questions marked with `// TODO`, I should find a mentor.
+- See `opnsense-api.md` for some captured calls from the GUI.
+  See `openapi.yaml` for a draft OpenAPI v3 spec for the webservice.
+- I wish there was something better for git hook management than `rusty-hook`.
 - I'm some way towards putting the openapi fuzzer into the development environment.
   It's been a tremendous pain and the flake looks like shit now.
   Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
