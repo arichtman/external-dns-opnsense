@@ -60,10 +60,25 @@ impl OPNsenseClient {
             ..Default::default()
         }
     }
+    fn settings_url(&self, resource: &str) -> String {
+        format!("settings/{resource}")
+    }
     async fn get(&self, resource: &str) -> Result<reqwest::Response, reqwest::Error> {
-        self.act(reqwest::Method::GET, resource, None).await
+        self.act(reqwest::Method::GET, &self.settings_url(resource), None)
+            .await
     }
     async fn post(
+        &self,
+        resource: &str,
+        body: Option<Value>,
+    ) -> Result<reqwest::Response, reqwest::Error> {
+        self.act(reqwest::Method::POST, &self.settings_url(resource), body)
+            .await
+    }
+    async fn get_raw(&self, resource: &str) -> Result<reqwest::Response, reqwest::Error> {
+        self.act(reqwest::Method::GET, resource, None).await
+    }
+    async fn post_raw(
         &self,
         resource: &str,
         body: Option<Value>,
@@ -76,9 +91,10 @@ impl OPNsenseClient {
         resource: &str,
         body: Option<Value>,
     ) -> Result<reqwest::Response, reqwest::Error> {
-        let req_builder = self
-            .client
-            .request(method, format!("{0}/{resource}", self.api_url));
+        let req_builder = self.client.request(
+            method,
+            format!("{0}/api/unbound/{1}", self.api_url, resource),
+        );
         let req_builder = req_builder.basic_auth(&self.api_key_id, Some(&self.api_key_secret));
         let req = match body {
             // TODO: This is a bit convoluted but I'd prefer to take in serde_json::Value over std::String
@@ -89,6 +105,9 @@ impl OPNsenseClient {
         .unwrap();
         debug!("{req:?}");
         self.client.execute(req).await
+    }
+    async fn apply_changes(&self) -> Result<reqwest::Response, reqwest::Error> {
+        self.post_raw("service/reconfigure", None).await
     }
     async fn get_all_host_overrides(&self) -> Result<reqwest::Response, reqwest::Error> {
         let body = json!({"current":1,"rowCount":-1,"sort":{"hostname":"asc"},"searchPhrase":""});
