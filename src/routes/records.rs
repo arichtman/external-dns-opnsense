@@ -1,4 +1,4 @@
-use crate::data_structs::Endpoint;
+use crate::data_structs::Endpoints;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -63,19 +63,29 @@ pub async fn records_get(State(state): State<AppState>) -> impl IntoResponse {
     debug!("Initial get: {override_list:#?}");
     if override_list.is_none() {
         return (
-            StatusCode::INSUFFICIENT_STORAGE,
+            StatusCode::INTERNAL_SERVER_ERROR,
             "Unable to locate records in response, aborting...".to_string(),
         );
     }
-    // TODO: do we need to grab this twice?
-    // TODO: Is it wise to unwrap here? It'll panic the thread, we should handle it
-    let override_list = returned_response["rows"].as_array().unwrap();
-    // TODO: Come back and remove the debug statements
-    debug!("As array: {override_list:#?}");
-    debug!("singular item: {:#?}", override_list[0]);
-    let ol: Vec<Endpoint> = override_list.into_iter().map(|x| x.into()).collect();
-    debug!("{ol:?}");
-    todo!()
+    // TODO: Domain check is passing, find out why the filter isn't
+    debug!("api domains: {:?}", state.api_domains);
+    debug!(
+        "domain check: {:?}",
+        state.api_domains.contains(&"com".to_string())
+    );
+    // TODO: do we need to grab this twice? Does it matter since there's no additional API call?
+    let override_list: Vec<&Value> = returned_response["rows"]
+        .as_array()
+        .unwrap()
+        .into_iter()
+        .filter(|x| {
+            state
+                .api_domains
+                .contains(&x.get("domain").unwrap().to_string())
+        })
+        .collect();
+    let ol: Endpoints = override_list.into();
+    (StatusCode::OK, serde_json::to_string(&ol).unwrap())
 }
 
 pub async fn records_post(State(_state): State<AppState>, _body: Json<Value>) -> impl IntoResponse {

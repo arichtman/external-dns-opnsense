@@ -4,11 +4,55 @@ External-DNS webhook extension for OPNsense
 
 Very much a work in progress and a learning experience.
 
+See `opnsense-api.md` for some captured calls from the GUI.
+See `openapi.yaml` for a draft OpenAPI v3 spec for the webservice.
+
+## Features
+
+- Pooled HTTP clients.
+  Client is held in shared state but seems to be releasing connections reasonably quickly.
+  It may turn out that our HTTP use just isn't intensive enough to justify pooling.
+- OpenTelemetry Prometheus metrics
+- Blazingly fast 🚀 (not to write lol, I'm slow as shit)
+
+## Notes
+
+Next immediate work, the domain filter not working for GET `records`.
+
+I'll have to think about a non-naieve implementation for this.
+I'm concerned search is pretty greedy with results.
+We can keep uuids in state after creation, but what happens when:
+a) service restarts and loses that state, records are still present,
+b) record is modified or removed, state not updated.
+Hitting the service to search every time, getting too many results, and having to filter them
+for every record is way too much.
+
+Also it looks like there's no rejection of addHostOverride with same host+domain+type.
+That's no bueno cause we can't even rely on stubbing our toe and recovering.
+Perhaps we pull all overrides on boot and filter against our domain list to populate state.
+
+Also, for EDNS a record has `targets`, so possibly multiple overrides when implemented.
+I think we need a separate step that pulls all overrides, filters to domains we care about, and populates the records list.
+We also need an apply function that looks the records list and reconciles it with unbound - i.e. the multi-target translation.
+Possibly also a deduplication thread that removes anything same record type, host, and domain.
+It's probably also wise to have a configurable threshold for
+a) total count of unbound records to stop errors wrecking the service, and
+b) total count of records considered under management, to stop other blowouts
+
+- There are quite a few Rust questions marked with `// TODO`, I should find a mentor.
+- I wish there was something better for git hook management than `rusty-hook`.
+- I'm some way towards putting the openapi fuzzer into the development environment.
+  It's been a tremendous pain and the flake looks like shit now.
+  Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
+- Review all uses of `unwrap`
+
+## Snippets
+
 Live-watch dev environment
 
 ```sh
 cargo watch --watch src/ --quiet --clear --exec run
-cargo watch --watch src/ --quiet --clear --shell bacon
+bacon
 cargo watch --watch src/ --quiet --clear --exec test
 ```
 
@@ -21,36 +65,6 @@ fn print_type_of<T>(_: &T) {
 
 print_type_of(&override_list[0]);
 ```
-
-## Features
-
-- Pooled HTTP clients.
-  Client is held in shared state but seems to be releasing connections reasonably quickly.
-  It may turn out that our HTTP use just isn't intensive enough to justify pooling.
-- OpenTelemetry Prometheus metrics
-- Blazingly fast 🚀 (not to write lol, I'm slow as shit)
-
-## Notes
-
-- There are quite a few Rust questions marked with `// TODO`, I should find a mentor.
-- See `opnsense-api.md` for some captured calls from the GUI.
-  See `openapi.yaml` for a draft OpenAPI v3 spec for the webservice.
-- I wish there was something better for git hook management than `rusty-hook`.
-- I'm some way towards putting the openapi fuzzer into the development environment.
-  It's been a tremendous pain and the flake looks like shit now.
-  Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
-- I'm concerned search is pretty greedy with results.
-  I'll have to think about a non-naieve implementation for this.
-  We can keep uuids in state after creation, but what happens when:
-  a) service restarts and loses that state, records are still present,
-  b) record is modified or removed, state not updated.
-  Hitting the service to search every time, getting too many results, and having to filter them
-  for every record is way too much.
-  Also it looks like there's no rejection of addHostOverride with same host+domain+type.
-  That's no bueno cause we can't even rely on stubbing our toe and recovering.
-  Perhaps we pull all overrides on boot and filter against our domain list to populate state.
-- It may be nice to compare our domain filter against `/unbound/diagnostic/listlocalzones`.
-  But this is a nice-to-have.
 
 ## References
 

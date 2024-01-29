@@ -20,17 +20,22 @@ pub struct Endpoints {
     items: Vec<Endpoint>,
 }
 
+impl From<Vec<&Value>> for Endpoints {
+    fn from(data: Vec<&Value>) -> Self {
+        let endpoints: Vec<Endpoint> = data.into_iter().map(|x| x.into()).collect();
+        Endpoints { items: endpoints }
+    }
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Endpoint {
     dnsName: String,
-    // TODO: Switch this back, we did this just to make mocking out the From impl easier
-    // targets: Vec<Target>,
-    targets: Vec<String>,
+    targets: String,
     recordType: String,
     setIdentifier: String,
     recordTTL: u64,
     labels: Option<HashMap<String, String>>,
-    providerSpecific: Option<Vec<ProviderSpecificProperty>>,
+    providerSpecific: Option<Value>,
 }
 
 impl From<&Value> for Endpoint {
@@ -39,12 +44,11 @@ impl From<&Value> for Endpoint {
             (Some(hostname), Some(domain)) => Ok(format!("{hostname}.{domain}")),
             (_, _) => Err("Record domain unprocessable."),
         };
-        // TODO: Revisit error handling here.
-        // It's not clear at what point we should be doing final validation of this
-        //   and if we should just be panicking on unwrap or logging and skipping or...
+        let target = data.get("server").unwrap().to_string();
+        let record_type = data.get("rr").unwrap().to_string();
         Endpoint {
             dnsName: fqdn.unwrap(),
-            targets: vec!["".into()],
+            targets: target,
             recordType: "".into(),
             setIdentifier: "".into(),
             recordTTL: 300_u64,
@@ -52,19 +56,4 @@ impl From<&Value> for Endpoint {
             providerSpecific: None,
         }
     }
-}
-
-// TODO: this could just be a vec of tuples...
-// TODO: We might well not even need it for this application.
-//   Smells like an escape hatch for more complex providers
-#[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct ProviderSpecificProperty {
-    name: String,
-    value: String,
-}
-
-#[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct Target {
-    // Type is a reserved keyword, hence the little mouse tail
-    type_: String,
 }
