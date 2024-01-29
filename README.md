@@ -4,10 +4,22 @@ External-DNS webhook extension for OPNsense
 
 Very much a work in progress and a learning experience.
 
-```
+Live-watch dev environment
+
+```sh
 cargo watch --watch src/ --quiet --clear --exec run
 cargo watch --watch src/ --quiet --clear --shell bacon
 cargo watch --watch src/ --quiet --clear --exec test
+```
+
+Reflection snippet - not for prod
+
+```rust
+fn print_type_of<T>(_: &T) {
+    println!("{}", std::any::type_name::<T>())
+}
+
+print_type_of(&override_list[0]);
 ```
 
 ## Features

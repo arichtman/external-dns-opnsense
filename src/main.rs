@@ -1,5 +1,5 @@
 // TODO: Remove for production
-#![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
+// #![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
 
 use std::str::FromStr;
 
@@ -40,7 +40,6 @@ pub struct AppState {
 
 // TODO: Look at moving the URL parsing maybe earlier in the setup?
 // api_url could be Url type but Default isn't implemented for reqwest::Url
-// reqwest::Url::from_str(api_url).unwrap(),
 #[derive(Clone, Default, Debug)]
 struct OPNsenseClient {
     client: reqwest::Client,
@@ -50,6 +49,9 @@ struct OPNsenseClient {
 }
 
 // TODO: We _could_ enumerate the REST resources, but honestly it's easier as a String
+// TODO: This is getting a bit big, either shift it to a module or break it up
+//   On that note, I think another abstraction that holds the "business logic" of our
+//   API transactions makes some sense, keep the client very plain
 impl OPNsenseClient {
     fn new(api_key_id: String, api_key_secret: String, api_url: String) -> OPNsenseClient {
         OPNsenseClient {
@@ -130,6 +132,7 @@ async fn main() {
     simple_logger::init_with_level(log_level).expect("Error initialising logging, aborting.");
     // TODO: Learn best logging practices.
     // Specifically: The debug here redundifies the info level and should we use "{:?}" or "{:#?}"
+    // How to let users configure it in the simplest way
     debug!("{:?}", cli);
     let client = OPNsenseClient::new(cli.api_key_id, cli.api_key_secret, cli.api_url);
     let state = AppState {
@@ -165,6 +168,9 @@ mod tests {
     use axum::http::StatusCode;
     use tower::util::ServiceExt;
 
+    // TODO: Work out a shared app object
+    // TODO: Look into mocking the OPNsense API or stubbing functions
+    // TODO: Begin adding tests for the other calls
     #[tokio::test]
     async fn get_root() {
         let app = app(AppState {

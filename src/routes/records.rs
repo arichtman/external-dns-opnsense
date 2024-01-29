@@ -1,5 +1,6 @@
 use std::str::ParseBoolError;
 
+use crate::{data_structs::Endpoint, Endpoints};
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::{ErrorResponse, IntoResponse};
@@ -10,8 +11,6 @@ use log::{debug, info};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-// use super::error::Result;
-// use super::error::Error;
 use super::AppState;
 
 pub fn app() -> Router<AppState> {
@@ -64,25 +63,25 @@ pub async fn records_get(State(state): State<AppState>) -> impl IntoResponse {
     let total_records = total_records.unwrap();
     info!("Found {total_records} total host overrides, filtering to domain list...");
     let override_list = returned_response.get("rows");
+    debug!("Initial get: {override_list:#?}");
     if override_list.is_none() {
         return (
             StatusCode::INSUFFICIENT_STORAGE,
             "Unable to locate records in response, aborting...".to_string(),
         );
     }
-    // let override_list = override_list.unwrap();
+    // TODO: do we need to grab this twice?
+    // TODO: Is it wise to unwrap here? It'll panic the thread, we should handle it
     let override_list = returned_response["rows"].as_array().unwrap();
-    // override_list.iter().map(|x| x.get("uuid".into())).collect();
-    debug!("{override_list:?}");
-    let ol: Vec<_> = override_list
-        .into_iter()
-        .map(|x| x.get::<&str>("uuid".into()))
-        .collect();
+    // TODO: Come back and remove the debug statements
+    debug!("As array: {override_list:#?}");
+    debug!("singular item: {:#?}", override_list[0]);
+    let ol: Vec<Endpoint> = override_list.into_iter().map(|x| x.into()).collect();
     debug!("{ol:?}");
     todo!()
 }
 
 pub async fn records_post(State(state): State<AppState>, body: Json<Value>) -> impl IntoResponse {
-    // Need to return 204 on success
+    // Need to return 204 on success, according to the docs
     (StatusCode::NO_CONTENT, "accepted".to_string())
 }
