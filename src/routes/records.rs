@@ -5,6 +5,7 @@ use axum::response::{ErrorResponse, IntoResponse};
 use axum::routing::{get, post};
 use axum::Json;
 use axum::Router;
+use log::{debug, info};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -39,10 +40,33 @@ struct HostOverride {
 
 pub async fn records_get(State(state): State<AppState>) -> Result<Json<Value>, String> {
     let result = state.api_client.get_all_host_overrides().await;
-    match result {
-        Ok(response) => Ok(Json::from(response.json::<Value>().await.unwrap())),
-        Err(e) => Err(e.to_string()),
+    // Bail out early if error
+    if result.is_err() {
+        return Err(result
+            .expect_err("Something has gone very wrong")
+            .to_string());
     }
+    let some_json = Json::from(result.ok().unwrap().json::<Value>().await.unwrap());
+    debug!("{some_json:?}");
+    // TODO: revisit the if-statements here and see about nicer pattern matching
+    //  though I'm not sure you're supposed to introduce side effects in matches
+    let total_records = some_json.get("total");
+    if total_records.is_none() {
+        // TODO: This Error response still returns 200 :S
+        return Err("Unable to locate total record count. Aborting...".into());
+    }
+    info!(
+        "Found {} total host overrides, filtering to domain list...",
+        some_json.get("total").unwrap()
+    );
+    let override_list = some_json.get("rows");
+    override_list.into_iter();
+    debug!("{override_list:?}");
+    todo!()
+    // match result {
+    //     Ok(response) => Ok(Json::from(response.json::<Value>().await.unwrap())),
+    //     Err(e) => Err(e.to_string()),
+    // }
 }
 
 // TODO: Find out why using naked serde_json::Value for body type breaks
