@@ -84,6 +84,7 @@ impl OPNsenseClient {
         }
         .build()
         .unwrap();
+        debug!("{req:?}");
         self.client.execute(req).await
     }
 }

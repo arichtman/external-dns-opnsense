@@ -12,9 +12,8 @@ cargo watch --watch src/ --quiet --clear --exec test
 
 ## Present state
 
-- Reqwest client is held in shared state but may not be pooling/holding connections
-- Port on the request isn't set but protocol is in the URL, unclear if this is fatal
-- DNS is failing to resolve my opnsense server but that could well be client issues
+- Reqwest client is held in shared state but seems to be releasing connections reasonably quickly.
+  It may turn out that our HTTP use just isn't intensive enough to justify pooling.
 
 ## Notes
 
@@ -30,6 +29,15 @@ cargo watch --watch src/ --quiet --clear --exec test
   Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
 - There is a crate for Axum Prometheus.
   I should get to that one day...
+- I'm concerned search is pretty greedy with results.
+  I'll have to think about a non-naieve implementation for this.
+  We can keep uuids in state after creation, but what happens when:
+  a) service restarts and loses that state, records are still present,
+  b) record is modified or removed, state not updated.
+  Hitting the service to search every time, getting too many results, and having to filter them
+  for every record is way too much.
+  Also it looks like there's no rejection of addHostOverride with same host+domain+type.
+  That's no bueno cause we can't even rely on stubbing our toe and recovering.
 
 ## References
 
