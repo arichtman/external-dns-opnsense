@@ -38,8 +38,10 @@ cargo watch --watch src/ --quiet --clear --exec test
   for every record is way too much.
   Also it looks like there's no rejection of addHostOverride with same host+domain+type.
   That's no bueno cause we can't even rely on stubbing our toe and recovering.
-- It may be nice to compare our domain filter against `/unbound/diagnostic/listlocalzonse`.
+- It may be nice to compare our domain filter against `/unbound/diagnostic/listlocalzones`.
   But this is a nice-to-have.
+  Actually, let's drive it entirely off `listlocalzones`?
+  Ah, no, then we can't do public zone overrides.
 
 ## References
 

@@ -6,6 +6,7 @@ use std::str::FromStr;
 use crate::data_structs::Endpoints;
 use clap::{arg, command, Parser};
 use reqwest::{header, Url};
+use serde_json::{json, Value};
 use tokio::net::TcpListener;
 mod data_structs;
 use log::{debug, error, info, trace, warn};
@@ -64,7 +65,7 @@ impl OPNsenseClient {
     async fn post(
         &self,
         resource: &str,
-        body: Option<String>,
+        body: Option<Value>,
     ) -> Result<reqwest::Response, reqwest::Error> {
         self.act(reqwest::Method::POST, resource, body).await
     }
@@ -72,20 +73,25 @@ impl OPNsenseClient {
         &self,
         method: reqwest::Method,
         resource: &str,
-        body: Option<String>,
+        body: Option<Value>,
     ) -> Result<reqwest::Response, reqwest::Error> {
         let req_builder = self
             .client
             .request(method, format!("{0}/{resource}", self.api_url));
         let req_builder = req_builder.basic_auth(&self.api_key_id, Some(&self.api_key_secret));
         let req = match body {
-            Some(s) => req_builder.body(s),
+            // TODO: This is a bit convoluted but I'd prefer to take in serde_json::Value over std::String
+            Some(s) => req_builder.body(serde_json::to_string(&s).unwrap()),
             None => req_builder,
         }
         .build()
         .unwrap();
         debug!("{req:?}");
         self.client.execute(req).await
+    }
+    async fn get_all_host_overrides(&self) -> Result<reqwest::Response, reqwest::Error> {
+        let body = json!({"current":1,"rowCount":-1,"sort":{"hostname":"asc"},"searchPhrase":""});
+        self.post("searchHostOverride", Some(body)).await
     }
 }
 
