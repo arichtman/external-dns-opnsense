@@ -1,15 +1,12 @@
-
-
-use crate::{data_structs::Endpoint};
+use crate::data_structs::Endpoint;
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::response::{IntoResponse};
-use axum::routing::{get};
-use axum::Json;
-use axum::Router;
+use axum::response::IntoResponse;
+use axum::routing::get;
+use axum::{Json, Router};
 use log::{debug, info};
 use serde::Deserialize;
-use serde_json::{Value};
+use serde_json::Value;
 
 use super::AppState;
 

@@ -1,5 +1,5 @@
 // TODO: Remove for production
-// #![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
+#![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
 
 use crate::data_structs::Endpoints;
 use clap::{arg, command, Parser};

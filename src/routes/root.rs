@@ -1,10 +1,8 @@
 use crate::routes::error::Result;
 use axum::extract::State;
 
-use axum::routing::{get};
-use axum::Json;
-use axum::Router;
-
+use axum::routing::get;
+use axum::{Json, Router};
 
 use super::AppState;
 
