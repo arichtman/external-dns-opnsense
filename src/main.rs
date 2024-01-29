@@ -9,6 +9,7 @@ use reqwest::{header, Url};
 use serde_json::{json, Value};
 use tokio::net::TcpListener;
 mod data_structs;
+use axum_otel_metrics::HttpMetricsLayerBuilder;
 use log::{debug, error, info, trace, warn};
 
 // TODO: Update env use when issue is resolved https://github.com/clap-rs/clap/issues/3221
@@ -119,9 +120,20 @@ async fn main() {
     };
     debug!("{:?}", state);
     let listener = TcpListener::bind("[::]:8888").await.unwrap();
-    axum::serve(listener, routes::app(state).into_make_service())
-        .await
-        .unwrap();
+    let metrics = HttpMetricsLayerBuilder::new()
+        .with_service_name(env!("CARGO_PKG_NAME").into())
+        .with_service_version(env!("CARGO_PKG_VERSION").into())
+        .with_prefix(env!("CARGO_PKG_NAME").into())
+        .build();
+    axum::serve(
+        listener,
+        routes::app(state)
+            .merge(metrics.routes())
+            .layer(metrics)
+            .into_make_service(),
+    )
+    .await
+    .unwrap();
 }
 
 // Ref: https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs

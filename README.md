@@ -10,10 +10,13 @@ cargo watch --watch src/ --quiet --clear --shell bacon
 cargo watch --watch src/ --quiet --clear --exec test
 ```
 
-## Present state
+## Features
 
-- Reqwest client is held in shared state but seems to be releasing connections reasonably quickly.
+- Pooled HTTP clients.
+  Client is held in shared state but seems to be releasing connections reasonably quickly.
   It may turn out that our HTTP use just isn't intensive enough to justify pooling.
+- OpenTelemetry Prometheus metrics
+- Blazingly fast 🚀 (not to write lol, I'm slow as shit)
 
 ## Notes
 
@@ -27,8 +30,6 @@ cargo watch --watch src/ --quiet --clear --exec test
 - I'm some way towards putting the openapi fuzzer into the development environment.
   It's been a tremendous pain and the flake looks like shit now.
   Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
-- There is a crate for Axum Prometheus.
-  I should get to that one day...
 - I'm concerned search is pretty greedy with results.
   I'll have to think about a non-naieve implementation for this.
   We can keep uuids in state after creation, but what happens when:
@@ -38,10 +39,9 @@ cargo watch --watch src/ --quiet --clear --exec test
   for every record is way too much.
   Also it looks like there's no rejection of addHostOverride with same host+domain+type.
   That's no bueno cause we can't even rely on stubbing our toe and recovering.
+  Perhaps we pull all overrides on boot and filter against our domain list to populate state.
 - It may be nice to compare our domain filter against `/unbound/diagnostic/listlocalzones`.
   But this is a nice-to-have.
-  Actually, let's drive it entirely off `listlocalzones`?
-  Ah, no, then we can't do public zone overrides.
 
 ## References
 

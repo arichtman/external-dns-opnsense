@@ -41,7 +41,7 @@ pub async fn records_get(State(state): State<AppState>) -> Result<Json<Value>, S
     let result = state.api_client.get_all_host_overrides().await;
     match result {
         Ok(response) => Ok(Json::from(response.json::<Value>().await.unwrap())),
-        Err(e) => todo!(),
+        Err(e) => Err(e.to_string()),
     }
 }
 
