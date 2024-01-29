@@ -14,14 +14,14 @@ use log::debug;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, )]
 struct Cli {
-    #[arg(short = 'i', long, env = "EDNS_API_KEY_ID", default_value = "")]
-    api_key_id: String,
-    #[arg(short = 's', long, env = "EDNS_API_KEY_SECRET", default_value = "")]
-    api_key_secret: String,
-    #[arg(short = 'u', long, env = "EDNS_API_URL", default_value = "")]
-    api_url: String,
-    #[arg(short = 'd', long, action = clap::ArgAction::Append, env = "EDNS_API_DOMAIN", long_help = "May be specified multiple times.", default_values_t = vec!(String::from("local")))]
-    api_domain: Vec<String>,
+    #[arg(short, long, env = "EDNS_KEY", default_value = "")]
+    key: String,
+    #[arg(short = 's', long, env = "EDNS_SECRET", default_value = "")]
+    secret: String,
+    #[arg(short = 'u', long, env = "EDNS_FQDN", default_value = "")]
+    fqdn: String,
+    #[arg(short = 'd', long, action = clap::ArgAction::Append, env = "EDNS_DOMAIN", long_help = "May be specified multiple times.", default_values_t = vec!(String::from("local")))]
+    domain: Vec<String>,
     /// Increments logging verbosity.
     #[arg(short, long, action = clap::ArgAction::Count, env = "EDNS_VERBOSE", long_help = "Optional. May be applied up to 4 times. Environment variable takes integer.")]
     verbose: u8,
@@ -41,9 +41,9 @@ pub struct AppState {
 #[derive(Clone, Default, Debug)]
 struct OPNsenseClient {
     client: reqwest::Client,
-    api_key_id: String,
-    api_key_secret: String,
-    api_url: String,
+    key: String,
+    secret: String,
+    url: String,
 }
 
 // TODO: We _could_ enumerate the REST resources, but honestly it's easier as a String
@@ -51,12 +51,12 @@ struct OPNsenseClient {
 //   On that note, I think another abstraction that holds the "business logic" of our
 //   API transactions makes some sense, keep the client very plain
 impl OPNsenseClient {
-    fn new(api_key_id: String, api_key_secret: String, api_url: String) -> OPNsenseClient {
+    fn new(key: String, secret: String, fqdn: String) -> OPNsenseClient {
         OPNsenseClient {
             client: reqwest::ClientBuilder::new().build().unwrap(),
-            api_key_id,
-            api_key_secret,
-            api_url,
+            key,
+            secret,
+            url: format!("https://{fqdn}"),
             ..Default::default()
         }
     }
@@ -91,11 +91,10 @@ impl OPNsenseClient {
         resource: &str,
         body: Option<Value>,
     ) -> Result<reqwest::Response, reqwest::Error> {
-        let req_builder = self.client.request(
-            method,
-            format!("{0}/api/unbound/{1}", self.api_url, resource),
-        );
-        let req_builder = req_builder.basic_auth(&self.api_key_id, Some(&self.api_key_secret));
+        let req_builder = self
+            .client
+            .request(method, format!("{0}/api/unbound/{1}", self.url, resource));
+        let req_builder = req_builder.basic_auth(&self.key, Some(&self.secret));
         let req = match body {
             // TODO: This is a bit convoluted but I'd prefer to take in serde_json::Value over std::String
             Some(s) => req_builder.body(serde_json::to_string(&s).unwrap()),
@@ -132,10 +131,11 @@ async fn main() {
     // Specifically: The debug here redundifies the info level and should we use "{:?}" or "{:#?}"
     // How to let users configure it in the simplest way
     debug!("{:?}", cli);
-    let client = OPNsenseClient::new(cli.api_key_id, cli.api_key_secret, cli.api_url);
+    let client = OPNsenseClient::new(cli.key, cli.secret, cli.fqdn);
+    debug!("{client:#?}");
     let state = AppState {
         api_client: client,
-        api_domains: cli.api_domain,
+        api_domains: cli.domain,
         ..Default::default()
     };
     debug!("{:?}", state);
