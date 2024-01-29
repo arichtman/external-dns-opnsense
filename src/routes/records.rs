@@ -1,15 +1,15 @@
-use std::str::ParseBoolError;
 
-use crate::{data_structs::Endpoint, Endpoints};
+
+use crate::{data_structs::Endpoint};
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::response::{ErrorResponse, IntoResponse};
-use axum::routing::{get, post};
+use axum::response::{IntoResponse};
+use axum::routing::{get};
 use axum::Json;
 use axum::Router;
 use log::{debug, info};
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::{Value};
 
 use super::AppState;
 
@@ -81,7 +81,7 @@ pub async fn records_get(State(state): State<AppState>) -> impl IntoResponse {
     todo!()
 }
 
-pub async fn records_post(State(state): State<AppState>, body: Json<Value>) -> impl IntoResponse {
+pub async fn records_post(State(_state): State<AppState>, _body: Json<Value>) -> impl IntoResponse {
     // Need to return 204 on success, according to the docs
     (StatusCode::NO_CONTENT, "accepted".to_string())
 }

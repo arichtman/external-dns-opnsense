@@ -1,7 +1,7 @@
 use super::error::Result;
 use super::AppState;
 use axum::extract::State;
-use axum::response::IntoResponse;
+
 use axum::routing::get;
 use axum::Router;
 use log::debug;

@@ -1,16 +1,14 @@
 // TODO: Remove for production
 // #![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
 
-use std::str::FromStr;
-
 use crate::data_structs::Endpoints;
 use clap::{arg, command, Parser};
-use reqwest::{header, Url};
+
 use serde_json::{json, Value};
 use tokio::net::TcpListener;
 mod data_structs;
 use axum_otel_metrics::HttpMetricsLayerBuilder;
-use log::{debug, error, info, trace, warn};
+use log::debug;
 
 // TODO: Update env use when issue is resolved https://github.com/clap-rs/clap/issues/3221
 #[derive(Parser, Debug)]
