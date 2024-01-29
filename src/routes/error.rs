@@ -11,9 +11,9 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[serde(tag = "type", content = "data")]
 pub enum Error {
     LoginFail,
+    GenericFail,
 
     // -- Auth errors.
-    AuthFailNoAuthTokenCookie,
     AuthFailTokenWrongFormat,
     AuthFailCtxNotInRequestExt,
     // -- Action errors.
@@ -50,9 +50,9 @@ impl Error {
             Self::LoginFail => (StatusCode::FORBIDDEN, ClientError::LOGIN_FAIL),
 
             // -- Auth.
-            Self::AuthFailNoAuthTokenCookie
-            | Self::AuthFailTokenWrongFormat
-            | Self::AuthFailCtxNotInRequestExt => (StatusCode::FORBIDDEN, ClientError::NO_AUTH),
+            Self::AuthFailTokenWrongFormat | Self::AuthFailCtxNotInRequestExt => {
+                (StatusCode::FORBIDDEN, ClientError::NO_AUTH)
+            }
 
             // -- Model.
             // Self::TicketDeleteFailIdNotFound { .. } => {
