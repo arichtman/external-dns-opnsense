@@ -17,7 +17,24 @@ See `openapi.yaml` for a draft OpenAPI v3 spec for the webservice.
 
 ## Notes
 
-Next immediate work, the domain filter not working for GET `records`.
+Concrete TODOs
+
+- The domain filter not working for GET `records`.
+- Destructure in params using g data structure
+- Add tracing tower middleware
+- Configure logging level from input
+- Pull business logic out into it's own module
+- Mock out opnsense access (using traits)
+- Use mutex or arc or whatnot for state override cache
+- Use with_state to limit state only to routes that need it
+- There are quite a few Rust questions marked with `// TODO`, I should find a mentor.
+- I wish there was something better for git hook management than `rusty-hook`.
+- I'm some way towards putting the openapi fuzzer into the development environment.
+  It's been a tremendous pain and the flake looks like shit now.
+  Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
+- Review all uses of `unwrap`
+- Add tracing / "proper" o11y stuff
+- Add OpenAPI spec generation? Maybe better verification
 
 I'll have to think about a non-naieve implementation for this.
 I'm concerned search is pretty greedy with results.
@@ -38,13 +55,6 @@ Possibly also a deduplication thread that removes anything same record type, hos
 It's probably also wise to have a configurable threshold for
 a) total count of unbound records to stop errors wrecking the service, and
 b) total count of records considered under management, to stop other blowouts
-
-- There are quite a few Rust questions marked with `// TODO`, I should find a mentor.
-- I wish there was something better for git hook management than `rusty-hook`.
-- I'm some way towards putting the openapi fuzzer into the development environment.
-  It's been a tremendous pain and the flake looks like shit now.
-  Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
-- Review all uses of `unwrap`
 
 ## Snippets
 

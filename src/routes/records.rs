@@ -3,7 +3,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
-use axum::{Json, Router};
+use axum::{debug_handler, Json, Router};
 use log::{debug, info};
 use serde::Deserialize;
 use serde_json::Value;
@@ -35,6 +35,7 @@ struct HostOverride {
     description: String,
 }
 
+#[debug_handler(state = AppState)]
 pub async fn records_get(State(state): State<AppState>) -> impl IntoResponse {
     let result = state.api_client.get_all_host_overrides().await;
     // Bail out early if error
@@ -88,6 +89,7 @@ pub async fn records_get(State(state): State<AppState>) -> impl IntoResponse {
     (StatusCode::OK, serde_json::to_string(&ol).unwrap())
 }
 
+#[debug_handler(state = AppState)]
 pub async fn records_post(State(_state): State<AppState>, _body: Json<Value>) -> impl IntoResponse {
     // Need to return 204 on success, according to the docs
     (StatusCode::NO_CONTENT, "accepted".to_string())

@@ -3,7 +3,7 @@ use super::AppState;
 use axum::extract::State;
 
 use axum::routing::get;
-use axum::Router;
+use axum::{debug_handler, Router};
 use log::debug;
 use reqwest::StatusCode;
 
@@ -15,6 +15,7 @@ pub fn app() -> Router<AppState> {
 // TODO: Look into returning more information on failure.
 // Presently only able to return 500 no body
 // TODO: Think about tuple matching or something fancier than nested match
+#[debug_handler(state = AppState)]
 pub async fn healthz_get(State(state): State<AppState>) -> Result<String> {
     // TODO: Not sure about this unwrap
     let response = state.api_client.get("get").await.unwrap();
