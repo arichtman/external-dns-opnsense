@@ -1,6 +1,8 @@
 // TODO: Remove for production
 #![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
 
+use std::sync::Arc;
+
 use crate::data_structs::Endpoints;
 use clap::{arg, command, Parser};
 
@@ -133,11 +135,11 @@ async fn main() {
     debug!("{:?}", cli);
     let client = OPNsenseClient::new(cli.key, cli.secret, cli.fqdn);
     debug!("{client:#?}");
-    let state = AppState {
+    let state = Arc::new(AppState {
         api_client: client,
         api_domains: cli.domain,
         ..Default::default()
-    };
+    });
     debug!("{:?}", state);
     let listener = TcpListener::bind("[::]:8888").await.unwrap();
     let metrics = HttpMetricsLayerBuilder::new()
@@ -171,9 +173,9 @@ mod tests {
     // TODO: Begin adding tests for the other calls
     #[tokio::test]
     async fn get_root() {
-        let app = app(AppState {
+        let app = app(Arc::new(AppState {
             ..Default::default()
-        });
+        }));
         let response = app
             .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
             .await

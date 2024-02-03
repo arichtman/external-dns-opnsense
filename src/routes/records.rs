@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::data_structs::Endpoints;
 use axum::extract::State;
 use axum::http::StatusCode;
@@ -10,7 +12,7 @@ use serde_json::Value;
 
 use super::AppState;
 
-pub fn app() -> Router<AppState> {
+pub fn app() -> Router<Arc<AppState>> {
     Router::new().route("/", get(records_get).post(records_post))
 }
 
@@ -35,8 +37,8 @@ struct HostOverride {
     description: String,
 }
 
-#[debug_handler(state = AppState)]
-pub async fn records_get(State(state): State<AppState>) -> impl IntoResponse {
+#[debug_handler(state = Arc<AppState>)]
+pub async fn records_get(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let result = state.api_client.get_all_host_overrides().await;
     // Bail out early if error
     // let result: Result<_, &str> = Err::<u32, &str>("foobies");
@@ -89,8 +91,11 @@ pub async fn records_get(State(state): State<AppState>) -> impl IntoResponse {
     (StatusCode::OK, serde_json::to_string(&ol).unwrap())
 }
 
-#[debug_handler(state = AppState)]
-pub async fn records_post(State(_state): State<AppState>, _body: Json<Value>) -> impl IntoResponse {
+#[debug_handler(state = Arc<AppState>)]
+pub async fn records_post(
+    State(_state): State<Arc<AppState>>,
+    _body: Json<Value>,
+) -> impl IntoResponse {
     // Need to return 204 on success, according to the docs
     (StatusCode::NO_CONTENT, "accepted".to_string())
 }

@@ -25,7 +25,7 @@ Concrete TODOs
 - Configure logging level from input
 - Pull business logic out into it's own module
 - Mock out opnsense access (using traits)
-- Use mutex or arc or whatnot for state override cache
+- Test using Arc for mutable shared state
 - Use with_state to limit state only to routes that need it
 - There are quite a few Rust questions marked with `// TODO`, I should find a mentor.
 - I wish there was something better for git hook management than `rusty-hook`.

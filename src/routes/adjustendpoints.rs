@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::extract::State;
 
 use axum::routing::post;
@@ -6,7 +8,7 @@ use serde_json::Value;
 
 use super::AppState;
 
-pub fn app() -> Router<AppState> {
+pub fn app() -> Router<Arc<AppState>> {
     Router::new().route("/", post(adjustendpoints_post))
 }
 
@@ -15,9 +17,9 @@ pub fn app() -> Router<AppState> {
 // It looks like a partial apply to inject our custom Error enum
 // Which could be really good in terms of OPNsense error categories, but seems overkill for now?
 // Ref: https://github.com/jeremychone-channel/rust-axum-course/blob/4c9ac43bf5c220d79994be18b637089f5ffbf5dd/src/error.rs#L5
-#[debug_handler(state = AppState)]
+#[debug_handler(state = Arc<AppState>)]
 pub async fn adjustendpoints_post(
-    State(_state): State<AppState>,
+    State(_state): State<Arc<AppState>>,
     _body: Json<Value>,
 ) -> Result<Json<Value>, String> {
     // Need to return 200 on success
