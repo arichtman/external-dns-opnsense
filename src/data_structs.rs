@@ -45,7 +45,7 @@ impl From<&Value> for Endpoint {
             (_, _) => Err("Record domain unprocessable."),
         };
         let target = data.get("server").unwrap().to_string();
-        let record_type = data.get("rr").unwrap().to_string();
+        let _record_type = data.get("rr").unwrap().to_string();
         Endpoint {
             dnsName: fqdn.unwrap(),
             targets: target,

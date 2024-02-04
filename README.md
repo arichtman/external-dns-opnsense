@@ -23,7 +23,6 @@ Concrete TODOs
 - Add CI like jithub actions
 - Think about publishing, crates? docker hub? WASM?
 - Use an async loop to test upstream API access and update shared state with health status, update health endpoint to check that
-- Add tracing tower middleware
 - Add info, trace and warn debug logging
 - Pull business logic out into it's own module
 - Use with_state to limit state only to routes that need it

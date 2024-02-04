@@ -5,7 +5,6 @@ use axum::Router;
 use crate::appstate::AppState;
 
 mod adjustendpoints;
-mod error;
 mod healthz;
 mod records;
 mod root;

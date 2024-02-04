@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::routes::error::Result;
+
 use axum::extract::State;
 
 use axum::response::IntoResponse;

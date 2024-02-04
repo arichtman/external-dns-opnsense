@@ -1,9 +1,9 @@
-use std::sync::Arc;
+
 
 use clap::{arg, command, Parser};
-use log::debug;
 
-use crate::appstate::AppState;
+
+
 // TODO: Update env use when issue is resolved https://github.com/clap-rs/clap/issues/3221
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, )]

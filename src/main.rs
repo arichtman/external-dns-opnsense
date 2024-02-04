@@ -1,22 +1,19 @@
 // TODO: Remove for production
 #![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
 
-use std::sync::Arc;
-
-use crate::data_structs::Endpoints;
-
-use serde_json::{json, Value};
-use tokio::net::TcpListener;
-mod data_structs;
 use axum_otel_metrics::HttpMetricsLayerBuilder;
+use data_structs::Endpoints;
 use log::debug;
+use serde_json::Value;
+use tokio::net::TcpListener;
 
-mod cli;
-use crate::cli::Cli;
+// TODO: This seems tedious mod-ing everything. Is this correct?
 mod appstate;
-
+mod cli;
+mod data_structs;
 mod opnsense;
 mod routes;
+
 #[tokio::main]
 async fn main() {
     // TODO: I'm not sure about how we've separated cli and appstate building, mostly by the amount of imports they all have to do which feels like a lot of coupling/shared knowledge?
@@ -42,12 +39,15 @@ async fn main() {
 // Ref: https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
-    use crate::routes::app;
     use axum::body::Body;
-    use axum::extract::Request;
-    use axum::http::StatusCode;
+    use axum::http::{Request, StatusCode};
     use tower::util::ServiceExt;
+    // TODO: Should these have prefix crate:: or is this fine?
+    use appstate::AppState;
+    use routes::app;
 
     #[tokio::test]
     async fn get_root() {

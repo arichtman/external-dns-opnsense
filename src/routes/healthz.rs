@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use super::error::Result;
+
 use super::AppState;
 use axum::extract::State;
 
