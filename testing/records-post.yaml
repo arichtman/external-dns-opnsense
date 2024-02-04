@@ -1,0 +1,11 @@
+create:
+  - dnsName: foo
+    targets: bar
+    recordType: A
+    setIdentifier: baz
+    recordTTL: 60
+    labels: {}
+    providerSpecific: []
+updateOld: []
+updateNew: []
+delete: []

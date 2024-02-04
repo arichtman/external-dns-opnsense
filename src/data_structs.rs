@@ -16,14 +16,13 @@ pub struct Changes {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
-pub struct Endpoints {
-    items: Vec<Endpoint>,
-}
+// Type Endpoints = Vec<Endpoint>;
+pub struct Endpoints(Vec<Endpoint>);
 
 impl From<Vec<&Value>> for Endpoints {
     fn from(data: Vec<&Value>) -> Self {
         let endpoints: Vec<Endpoint> = data.into_iter().map(|x| x.into()).collect();
-        Endpoints { items: endpoints }
+        Endpoints(endpoints)
     }
 }
 

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use crate::data_structs::Endpoints;
+use crate::data_structs::{Changes, Endpoints};
 use axum::extract::State;
-use axum::http::StatusCode;
+use axum::http::{HeaderMap, StatusCode};
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{debug_handler, Json, Router};
@@ -38,7 +38,12 @@ struct HostOverride {
 }
 
 #[debug_handler(state = Arc<AppState>)]
-pub async fn records_get(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+pub async fn records_get(
+    headers: HeaderMap,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    debug!("{:#?}", headers);
+    headers.contains_key("Content-Type");
     let result = state.api_client.get_all_host_overrides().await;
     // Bail out early if error
     // let result: Result<_, &str> = Err::<u32, &str>("foobies");
@@ -83,7 +88,7 @@ pub async fn records_get(State(state): State<Arc<AppState>>) -> impl IntoRespons
         .unwrap()
         .into_iter()
         .filter(|x| {
-            // TODO: This quotation replace is jank. Should be happening much earlier, ideally in Clap parsing or config.
+            // TODO: This quotation replace is jank. Should be happening much earlier, ideally in Clap parsing or config construction
             // debug!(
             //     "{:#?}",
             //     &x.get("domain").unwrap().to_string().replace('"', "")
@@ -99,9 +104,11 @@ pub async fn records_get(State(state): State<Arc<AppState>>) -> impl IntoRespons
 
 #[debug_handler(state = Arc<AppState>)]
 pub async fn records_post(
-    State(_state): State<Arc<AppState>>,
-    _body: Json<Value>,
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<Changes>,
 ) -> impl IntoResponse {
+    // TODO: Should we put any response body?
     // Need to return 204 on success, according to the docs
-    (StatusCode::NO_CONTENT, "accepted".to_string())
+    (StatusCode::NO_CONTENT, Json("Accepted"))
+    // StatusCode::NO_CONTENT
 }

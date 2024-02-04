@@ -1,5 +1,7 @@
 # OPNsense API notes
 
+Info captured from the OPNsense GUI.
+
 `/api/unbound/settings/searchHostOverride/`: Request body
 
 ```json
