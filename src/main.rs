@@ -105,7 +105,9 @@ impl OPNsenseClient {
         .build()
         .unwrap();
         debug!("{req:?}");
-        self.client.execute(req).await
+        // TODO: Not sure if this is the right approach, but changing the function signature to just Response doesn't capture that it can fail.
+        //   Maybe it's an async thing?
+        Ok(self.client.execute(req).await?)
     }
     async fn apply_changes(&self) -> Result<reqwest::Response, reqwest::Error> {
         self.post_raw("service/reconfigure", None).await
@@ -137,10 +139,10 @@ async fn main() {
     debug!("{client:#?}");
     let state = Arc::new(AppState {
         api_client: client,
-        api_domains: cli.domain,
+        api_domains: cli.domain.into_iter().map(|d| d.replace('"', "")).collect(),
         ..Default::default()
     });
-    debug!("{:?}", state);
+    debug!("{:#?}", state);
     let listener = TcpListener::bind("[::]:8888").await.unwrap();
     let metrics = HttpMetricsLayerBuilder::new()
         .with_service_name(env!("CARGO_PKG_NAME").into())
@@ -168,9 +170,6 @@ mod tests {
     use axum::http::StatusCode;
     use tower::util::ServiceExt;
 
-    // TODO: Work out a shared app object
-    // TODO: Look into mocking the OPNsense API or stubbing functions
-    // TODO: Begin adding tests for the other calls
     #[tokio::test]
     async fn get_root() {
         let app = app(Arc::new(AppState {

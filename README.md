@@ -19,24 +19,33 @@ See `openapi.yaml` for a draft OpenAPI v3 spec for the webservice.
 
 Concrete TODOs
 
-- The domain filter not working for GET `records`.
-- Destructure in params using g data structure
+- Destructure in params using data structure
 - Add CI like jithub actions
 - Think about publishing, crates? docker hub? WASM?
+- Use an async loop to test upstream API access and update shared state with health status, update health endpoint to check that
 - Add tracing tower middleware
-- Configure logging level from input
+- Add info, trace and warn debug logging
 - Pull business logic out into it's own module
-- Mock out opnsense access (using traits)
-- Test using Arc for mutable shared state
 - Use with_state to limit state only to routes that need it
-- There are quite a few Rust questions marked with `// TODO`, I should find a mentor.
-- I wish there was something better for git hook management than `rusty-hook`.
-- I'm some way towards putting the openapi fuzzer into the development environment.
-  It's been a tremendous pain and the flake looks like shit now.
-  Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
+- Review all `// TODO` with mentor
+- See about git hooks and some CI checks.
+  `rusty-hook` isn't greaaat but works.
 - Review all uses of `unwrap`
 - Add tracing / "proper" o11y stuff
-- Add OpenAPI spec generation? Maybe better verification
+- Add OpenAPI spec generation?
+  Maybe better to add verification/contract testing
+- Find a nice way to strip all quotes on Clap arguments
+
+Testing:
+
+- Mock out opnsense access (using traits)
+- Test using Arc for mutable shared state
+- Add the openapi fuzzer into the development environment or test suite
+  It's been a tremendous pain and the flake looks like shit now.
+  Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
+- Work out a shared app object so tests don't all instantiate their own "server"
+- Add tests for at least all endpoints and methods
+- See if `.body()` is actually required for `builder()`
 
 I'll have to think about a non-naieve implementation for this.
 I'm concerned search is pretty greedy with results.

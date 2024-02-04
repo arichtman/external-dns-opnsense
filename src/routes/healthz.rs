@@ -4,10 +4,11 @@ use super::error::Result;
 use super::AppState;
 use axum::extract::State;
 
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{debug_handler, Router};
 use log::debug;
-use reqwest::StatusCode;
 
 pub fn app() -> Router<Arc<AppState>> {
     Router::new().route("/", get(healthz_get))
@@ -18,15 +19,16 @@ pub fn app() -> Router<Arc<AppState>> {
 // Presently only able to return 500 no body
 // TODO: Think about tuple matching or something fancier than nested match
 #[debug_handler(state = Arc<AppState>)]
-pub async fn healthz_get(State(state): State<Arc<AppState>>) -> Result<String> {
+pub async fn healthz_get(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    // TODO: There feels like a cleverer way to simply return the outcome of the api client call
+    //   but the ? doesn't seem to play nice with an async function cause it returns unit
+    //   and if we don't put any other handling then ? on the golden path returns a reqwest::Response, which doesn't impl IntoResponse
+    // state.api_client.get("get").await?
     // TODO: Not sure about this unwrap
-    let response = state.api_client.get("get").await.unwrap();
+    let response = state.api_client.get("get").await;
     debug!("{response:?}");
-    match response.error_for_status() {
-        Ok(_) => Ok("Genki".into()),
-        Err(e) => match e.status() {
-            Some(StatusCode::UNAUTHORIZED) => Err(super::error::Error::LoginFail),
-            _ => Err(super::error::Error::GenericFail),
-        },
+    match response {
+        Ok(_) => (StatusCode::OK, "Genki".to_string()),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
     }
 }

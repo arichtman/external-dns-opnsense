@@ -77,14 +77,20 @@ pub async fn records_get(State(state): State<Arc<AppState>>) -> impl IntoRespons
         state.api_domains.contains(&"com".to_string())
     );
     // TODO: do we need to grab this twice? Does it matter since there's no additional API call?
+    debug!("{:#?}", returned_response["rows"]);
     let override_list: Vec<&Value> = returned_response["rows"]
         .as_array()
         .unwrap()
         .into_iter()
         .filter(|x| {
+            // TODO: This quotation replace is jank. Should be happening much earlier, ideally in Clap parsing or config.
+            // debug!(
+            //     "{:#?}",
+            //     &x.get("domain").unwrap().to_string().replace('"', "")
+            // );
             state
                 .api_domains
-                .contains(&x.get("domain").unwrap().to_string())
+                .contains(&x.get("domain").unwrap().to_string().replace('"', ""))
         })
         .collect();
     let ol: Endpoints = override_list.into();
