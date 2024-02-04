@@ -16,7 +16,6 @@ pub struct Changes {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
-// Type Endpoints = Vec<Endpoint>;
 pub struct Endpoints(Vec<Endpoint>);
 
 impl From<Vec<&Value>> for Endpoints {

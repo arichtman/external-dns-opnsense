@@ -8,7 +8,7 @@ use axum::routing::get;
 use axum::{debug_handler, Json, Router};
 use log::{debug, info};
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{json, Value};
 
 use super::AppState;
 
@@ -44,14 +44,23 @@ pub async fn records_get(
 ) -> impl IntoResponse {
     debug!("{:#?}", headers);
     headers.contains_key("Content-Type");
+    // TODO: Work out how to match requested content-type. Middleware would be nice
+    // fn match_content_type(resp: impl Into<String>) {
+    //     match headers.get("Content-Type") {
+    //         None => resp,
+    //         Some("application/json") => Json(resp),
+    //         Some("text/plain") => resp,
+    //         _ => resp,
+    //     }
+    // }
     let result = state.api_client.get_all_host_overrides().await;
     // Bail out early if error
-    // let result: Result<_, &str> = Err::<u32, &str>("foobies");
     if result.is_err() {
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
             // TODO: Should we translate or modify this message?
-            result.unwrap_err().to_string(),
+            // TODO: This smells. Double-json function calls and unwraps all over?
+            Json::from(serde_json::to_value(result.unwrap_err().to_string()).unwrap()),
         );
     }
     let returned_response = Json::from(result.unwrap().json::<Value>().await.unwrap());
@@ -62,7 +71,12 @@ pub async fn records_get(
     if total_records.is_none() {
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
-            "Unable to locate total record count, aborting...".to_string(),
+            Json::from(
+                serde_json::to_value(
+                    "Unable to locate total record count, aborting...".to_string(),
+                )
+                .unwrap(),
+            ),
         );
     }
     let total_records = total_records.unwrap();
@@ -72,34 +86,29 @@ pub async fn records_get(
     if override_list.is_none() {
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
-            "Unable to locate records in response, aborting...".to_string(),
+            Json::from(
+                serde_json::to_value(
+                    "Unable to locate records in response, aborting...".to_string(),
+                )
+                .unwrap(),
+            ),
         );
     }
-    // TODO: Domain check is passing, find out why the filter isn't
-    debug!("api domains: {:?}", state.api_domains);
-    debug!(
-        "domain check: {:?}",
-        state.api_domains.contains(&"com".to_string())
-    );
-    // TODO: do we need to grab this twice? Does it matter since there's no additional API call?
     debug!("{:#?}", returned_response["rows"]);
+    // TODO: do we need to grab this twice? Does it matter since there's no additional API call?
     let override_list: Vec<&Value> = returned_response["rows"]
         .as_array()
         .unwrap()
         .into_iter()
         .filter(|x| {
             // TODO: This quotation replace is jank. Should be happening much earlier, ideally in Clap parsing or config construction
-            // debug!(
-            //     "{:#?}",
-            //     &x.get("domain").unwrap().to_string().replace('"', "")
-            // );
             state
                 .api_domains
                 .contains(&x.get("domain").unwrap().to_string().replace('"', ""))
         })
         .collect();
     let ol: Endpoints = override_list.into();
-    (StatusCode::OK, serde_json::to_string(&ol).unwrap())
+    (StatusCode::OK, Json(serde_json::to_value(&ol).unwrap()))
 }
 
 #[debug_handler(state = Arc<AppState>)]
