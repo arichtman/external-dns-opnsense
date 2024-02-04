@@ -21,6 +21,8 @@ Concrete TODOs
 
 - The domain filter not working for GET `records`.
 - Destructure in params using g data structure
+- Add CI like jithub actions
+- Think about publishing, crates? docker hub? WASM?
 - Add tracing tower middleware
 - Configure logging level from input
 - Pull business logic out into it's own module

@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::routes::error::Result;
 use axum::extract::State;
 
+use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{debug_handler, Json, Router};
 
@@ -14,7 +15,7 @@ pub fn app() -> Router<Arc<AppState>> {
 
 // TODO: Do we add wildcards? Are subdomains obviated by TLDs?
 #[debug_handler(state = Arc<AppState>)]
-pub async fn root_get(State(state): State<Arc<AppState>>) -> Result<Json<Vec<String>>> {
+pub async fn root_get(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     // TODO: think about the arc and whether static stuff like domains list should be arc
-    Ok(Json::from(state.api_domains.clone()))
+    Json::from(state.api_domains.clone())
 }
