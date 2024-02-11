@@ -30,3 +30,7 @@ features = ["derive", "env"]
 [[bin]]
 name = "edns"
 path = "src/main.rs"
+
+[dev-dependencies]
+mockall = "0.12.1"
+rstest = "0.18.2"

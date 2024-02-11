@@ -4,6 +4,8 @@
 use axum_otel_metrics::HttpMetricsLayerBuilder;
 use data_structs::Endpoints;
 use log::debug;
+#[cfg(test)]
+use mockall::automock;
 use serde_json::Value;
 use tokio::net::TcpListener;
 
@@ -19,7 +21,8 @@ mod routes;
 async fn main() {
     // TODO: I'm not sure about how we've separated cli and appstate building, mostly by the amount of imports they all have to do which feels like a lot of coupling/shared knowledge?
     let state = crate::appstate::build(cli::get());
-    debug!("{:#?}", state);
+    // Not possible with trait object
+    // debug!("{:#?}", state);
     let listener = TcpListener::bind("[::]:8888").await.unwrap();
     let metrics = HttpMetricsLayerBuilder::new()
         .with_service_name(env!("CARGO_PKG_NAME").into())
@@ -48,16 +51,25 @@ mod tests {
     // TODO: Should these have prefix crate:: or is this fine?
     use appstate::AppState;
     use routes::app;
+    use rstest::rstest;
 
+    #[rstest]
+    #[case("/")]
     #[tokio::test]
-    async fn get_root() {
+    async fn get_requests(#[case] resource: &'static str) {
         let app = app(AppState {
             ..Default::default()
         });
         let response = app
-            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+            .oneshot(
+                Request::builder()
+                    .uri(resource)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
             .await
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
+        // assert!(matches!(response.body, Value::Array { .. }))
     }
 }

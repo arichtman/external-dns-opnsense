@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::appstate::DynStateTrait;
 use crate::data_structs::{Changes, Endpoints};
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode};
@@ -10,9 +11,7 @@ use log::{debug, info};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-use super::AppState;
-
-pub fn app() -> Router<AppState> {
+pub fn app() -> Router<DynStateTrait> {
     Router::new().route("/", get(records_get).post(records_post))
 }
 
@@ -37,8 +36,11 @@ struct HostOverride {
     description: String,
 }
 
-#[debug_handler(state = AppState)]
-pub async fn records_get(headers: HeaderMap, State(state): State<AppState>) -> impl IntoResponse {
+#[debug_handler(state = DynStateTrait)]
+pub async fn records_get(
+    headers: HeaderMap,
+    State(state): State<DynStateTrait>,
+) -> impl IntoResponse {
     debug!("{:#?}", headers);
     headers.contains_key("Content-Type");
     // TODO: Work out how to match requested content-type. Middleware would be nice
@@ -50,7 +52,7 @@ pub async fn records_get(headers: HeaderMap, State(state): State<AppState>) -> i
     //         _ => resp,
     //     }
     // }
-    let result = state.api_client.get_all_host_overrides().await;
+    let result = state.get_all_host_overrides().await;
     // Bail out early if error
     if result.is_err() {
         return (
@@ -100,7 +102,7 @@ pub async fn records_get(headers: HeaderMap, State(state): State<AppState>) -> i
         .filter(|x| {
             // TODO: This quotation replace is jank. Should be happening much earlier, ideally in Clap parsing or config construction
             state
-                .api_domains
+                .get_domains()
                 .contains(&x.get("domain").unwrap().to_string().replace('"', ""))
         })
         .collect();
@@ -108,9 +110,9 @@ pub async fn records_get(headers: HeaderMap, State(state): State<AppState>) -> i
     (StatusCode::OK, Json(serde_json::to_value(&ol).unwrap()))
 }
 
-#[debug_handler(state = AppState)]
+#[debug_handler(state = DynStateTrait)]
 pub async fn records_post(
-    State(state): State<AppState>,
+    State(state): State<DynStateTrait>,
     Json(body): Json<Changes>,
 ) -> impl IntoResponse {
     // TODO: Should we put any response body?

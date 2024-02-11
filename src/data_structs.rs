@@ -3,7 +3,6 @@
 
 use std::collections::HashMap;
 
-use crate::errors::InternalDataError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -19,15 +18,6 @@ pub struct Changes {
 
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct Endpoints(Vec<Endpoint>);
-
-impl Endpoints {
-    fn get_by_name(&self, name: &str) -> Result<Endpoint, InternalDataError> {
-        todo!()
-    }
-    fn get_by_address(&self, address: &str) -> Result<Endpoint, InternalDataError> {
-        todo!()
-    }
-}
 
 impl From<Vec<&Value>> for Endpoints {
     fn from(data: Vec<&Value>) -> Self {

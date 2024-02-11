@@ -1,13 +1,13 @@
 use axum::Router;
 
-use crate::appstate::AppState;
+use crate::appstate::{AppState, DynStateTrait};
 
 mod adjustendpoints;
 mod healthz;
 mod records;
 mod root;
 
-pub fn app(state: AppState) -> Router {
+pub fn app(state: DynStateTrait) -> Router {
     // TODO: it feels weird nesting them here but it's marginally less boilerplatey
     Router::new()
         .merge(root::app())
