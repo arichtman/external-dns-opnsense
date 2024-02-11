@@ -33,8 +33,8 @@ Concrete TODOs
   Maybe better to add verification/contract testing
 - Find a nice way to strip all quotes on Clap arguments
 - Consider caching health checks
-- Use a trait object to decouple access from handlers
-- Put OPNsense CRUD logic into the client struct implementation
+- Put OPNsense CRUD logic into the client struct implementation?
+  This is less clear now we're using the trait object
 - Set derive macros to only apply during test/debug builds
 - Create custome error codes for data access, then use a mapper to translate them into HTTP error codes for the response
 
@@ -42,7 +42,7 @@ Testing:
 
 - Mock out opnsense access (using traits)
 - Use a mock trait object to conduct unit tests
-- Test using Arc for mutable shared state
+- Test using mutex for mutable shared state
 - Add the openapi fuzzer into the development environment or test suite
   It's been a tremendous pain and the flake looks like shit now.
   Oh and of course it doesn't work anyways and to just install it unmanaged would have been seconds.
