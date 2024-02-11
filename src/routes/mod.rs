@@ -1,6 +1,6 @@
 use axum::Router;
 
-use crate::appstate::{AppState, DynStateTrait};
+use crate::appstate::{DynStateTrait};
 
 mod adjustendpoints;
 mod healthz;

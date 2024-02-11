@@ -6,7 +6,7 @@ use axum::{debug_handler, Json, Router};
 
 use crate::appstate::DynStateTrait;
 
-use super::AppState;
+
 
 pub fn app() -> Router<DynStateTrait> {
     Router::new().route("/", get(root_get))

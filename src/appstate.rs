@@ -64,10 +64,10 @@ pub trait StateTrait {
 
 #[async_trait]
 impl StateTrait for State {
-    fn get_by_name(&self, name: &str) -> Result<Endpoint, InternalDataError> {
+    fn get_by_name(&self, _name: &str) -> Result<Endpoint, InternalDataError> {
         todo!()
     }
-    fn get_by_address(&self, address: &str) -> Result<Endpoint, InternalDataError> {
+    fn get_by_address(&self, _address: &str) -> Result<Endpoint, InternalDataError> {
         todo!()
     }
     async fn api_get(&self, resource: &str) -> Result<reqwest::Response, reqwest::Error> {

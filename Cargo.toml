@@ -32,5 +32,6 @@ name = "edns"
 path = "src/main.rs"
 
 [dev-dependencies]
+hyper = { version = "1.1.0", features = ["full"] }
 mockall = "0.12.1"
 rstest = "0.18.2"

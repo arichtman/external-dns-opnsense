@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::appstate::DynStateTrait;
 use crate::data_structs::{Changes, Endpoints};
 use axum::extract::State;
@@ -9,7 +7,7 @@ use axum::routing::get;
 use axum::{debug_handler, Json, Router};
 use log::{debug, info};
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::{Value};
 
 pub fn app() -> Router<DynStateTrait> {
     Router::new().route("/", get(records_get).post(records_post))
@@ -112,8 +110,8 @@ pub async fn records_get(
 
 #[debug_handler(state = DynStateTrait)]
 pub async fn records_post(
-    State(state): State<DynStateTrait>,
-    Json(body): Json<Changes>,
+    State(_state): State<DynStateTrait>,
+    Json(_body): Json<Changes>,
 ) -> impl IntoResponse {
     // TODO: Should we put any response body?
     // Need to return 204 on success, according to the docs
