@@ -12,7 +12,7 @@ use serde_json::{json, Value};
 
 use super::AppState;
 
-pub fn app() -> Router<Arc<AppState>> {
+pub fn app() -> Router<AppState> {
     Router::new().route("/", get(records_get).post(records_post))
 }
 
@@ -37,11 +37,8 @@ struct HostOverride {
     description: String,
 }
 
-#[debug_handler(state = Arc<AppState>)]
-pub async fn records_get(
-    headers: HeaderMap,
-    State(state): State<Arc<AppState>>,
-) -> impl IntoResponse {
+#[debug_handler(state = AppState)]
+pub async fn records_get(headers: HeaderMap, State(state): State<AppState>) -> impl IntoResponse {
     debug!("{:#?}", headers);
     headers.contains_key("Content-Type");
     // TODO: Work out how to match requested content-type. Middleware would be nice
@@ -111,9 +108,9 @@ pub async fn records_get(
     (StatusCode::OK, Json(serde_json::to_value(&ol).unwrap()))
 }
 
-#[debug_handler(state = Arc<AppState>)]
+#[debug_handler(state = AppState)]
 pub async fn records_post(
-    State(state): State<Arc<AppState>>,
+    State(state): State<AppState>,
     Json(body): Json<Changes>,
 ) -> impl IntoResponse {
     // TODO: Should we put any response body?

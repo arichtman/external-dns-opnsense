@@ -4,8 +4,7 @@ External-DNS webhook extension for OPNsense
 
 Very much a work in progress and a learning experience.
 
-See `opnsense-api.md` for some captured calls from the GUI.
-See `openapi.yaml` for a draft OpenAPI v3 spec for the webservice.
+See `testing` directory for some supplementary stuff about the upstream API.
 
 ## Features
 
@@ -22,7 +21,6 @@ Concrete TODOs
 - Destructure in params using data structure
 - Add CI like jithub actions
 - Think about publishing, crates? docker hub? WASM?
-- Use an async loop to test upstream API access and update shared state with health status, update health endpoint to check that
 - Add info, trace and warn debug logging
 - Pull business logic out into it's own module
 - Use with_state to limit state only to routes that need it
@@ -34,10 +32,16 @@ Concrete TODOs
 - Add OpenAPI spec generation?
   Maybe better to add verification/contract testing
 - Find a nice way to strip all quotes on Clap arguments
+- Consider caching health checks
+- Use a trait object to decouple access from handlers
+- Put OPNsense CRUD logic into the client struct implementation
+- Set derive macros to only apply during test/debug builds
+- Create custome error codes for data access, then use a mapper to translate them into HTTP error codes for the response
 
 Testing:
 
 - Mock out opnsense access (using traits)
+- Use a mock trait object to conduct unit tests
 - Test using Arc for mutable shared state
 - Add the openapi fuzzer into the development environment or test suite
   It's been a tremendous pain and the flake looks like shit now.
@@ -95,3 +99,4 @@ print_type_of(&override_list[0]);
 - [OPNsense forum post](https://forum.opnsense.org/index.php?topic=25823.0)
 - [Mo8it's similar project](https://codeberg.org/mo8it/git-webhook-client/src/commit/61bcd61399570fdb67a535cd47ee7a19445f6360)
 - [Jeremy Chone's Axum course](https://github.com/jeremychone-channel/rust-axum-course)
+- [Rainer Stropek on unit testing Axum](https://www.youtube.com/watch?v=_cYIhG_3qSo), [repo](https://github.com/rstropek/rust-samples/tree/master/axum-di-testing)

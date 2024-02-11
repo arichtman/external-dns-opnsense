@@ -11,6 +11,7 @@ use tokio::net::TcpListener;
 mod appstate;
 mod cli;
 mod data_structs;
+mod errors;
 mod opnsense;
 mod routes;
 
@@ -39,7 +40,6 @@ async fn main() {
 // Ref: https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
 
     use super::*;
     use axum::body::Body;
@@ -51,9 +51,9 @@ mod tests {
 
     #[tokio::test]
     async fn get_root() {
-        let app = app(Arc::new(AppState {
+        let app = app(AppState {
             ..Default::default()
-        }));
+        });
         let response = app
             .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
             .await

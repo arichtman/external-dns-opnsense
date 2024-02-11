@@ -1,8 +1,4 @@
-
-
 use clap::{arg, command, Parser};
-
-
 
 // TODO: Update env use when issue is resolved https://github.com/clap-rs/clap/issues/3221
 #[derive(Parser, Debug)]

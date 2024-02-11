@@ -5,16 +5,17 @@ use log::debug;
 use crate::cli::Cli;
 use crate::opnsense::OPNsenseClient;
 use crate::Endpoints;
+pub type AppState = Arc<State>;
 // TODO: I _think_ we want ownership here cause we don't want lifetime issues when other stuff drops out of scope
 // TODO: Can/should we make this private?
 #[derive(Clone, Default, Debug)]
-pub struct AppState {
+pub struct State {
     pub api_client: OPNsenseClient,
     pub api_domains: Vec<String>,
     pub endpoints: Endpoints,
 }
 
-pub fn build(cli: Cli) -> Arc<AppState> {
+pub fn build(cli: Cli) -> AppState {
     // TODO: Is this the idiomatic way to handle it?
     // TODO: Maybe move this into the cli module?
     let log_level = match cli.verbose {
@@ -27,11 +28,11 @@ pub fn build(cli: Cli) -> Arc<AppState> {
     simple_logger::init_with_level(log_level).expect("Error initialising logging, aborting.");
     // TODO: Learn best logging practices.
     // Specifically: The debug here redundifies the info level and should we use "{:?}" or "{:#?}"
-    // How to let users configure it in the simplest way
+    // How to let users configure it in the simplest way, I've seen some rely on RUST_LOG
     debug!("{:?}", cli);
     let client = OPNsenseClient::new(cli.key, cli.secret, cli.fqdn);
     debug!("{client:#?}");
-    Arc::new(AppState {
+    Arc::new(State {
         api_client: client,
         api_domains: cli.domain.into_iter().map(|d| d.replace('"', "")).collect(),
         ..Default::default()
