@@ -7,7 +7,7 @@ use axum::routing::get;
 use axum::{debug_handler, Json, Router};
 use log::{debug, info};
 use serde::Deserialize;
-use serde_json::{Value};
+use serde_json::Value;
 
 pub fn app() -> Router<DynStateTrait> {
     Router::new().route("/", get(records_get).post(records_post))
@@ -36,20 +36,10 @@ struct HostOverride {
 
 #[debug_handler(state = DynStateTrait)]
 pub async fn records_get(
-    headers: HeaderMap,
+    // headers: HeaderMap,
     State(state): State<DynStateTrait>,
 ) -> impl IntoResponse {
-    debug!("{:#?}", headers);
-    headers.contains_key("Content-Type");
     // TODO: Work out how to match requested content-type. Middleware would be nice
-    // fn match_content_type(resp: impl Into<String>) {
-    //     match headers.get("Content-Type") {
-    //         None => resp,
-    //         Some("application/json") => Json(resp),
-    //         Some("text/plain") => resp,
-    //         _ => resp,
-    //     }
-    // }
     let result = state.get_all_host_overrides().await;
     // Bail out early if error
     if result.is_err() {
@@ -62,8 +52,6 @@ pub async fn records_get(
     }
     let returned_response = Json::from(result.unwrap().json::<Value>().await.unwrap());
     debug!("{returned_response:?}");
-    // TODO: revisit the if-statements here and see about nicer pattern matching
-    //  though I'm not sure you're supposed to introduce side effects in matches
     let total_records = returned_response.get("total");
     if total_records.is_none() {
         return (
@@ -93,15 +81,28 @@ pub async fn records_get(
     }
     debug!("{:#?}", returned_response["rows"]);
     // TODO: do we need to grab this twice? Does it matter since there's no additional API call?
+    let override_set = returned_response["rows"].as_array().unwrap();
+    let controlled_domains = state.get_domains();
+    // use crate::data_structs::Endpoint;
+    // let endpoint_set: Vec<_> = override_set
+    //     .into_iter()
+    //     .filter_map(|x| {
+    //         let normalized_domain_name = &x.get("domain").unwrap().to_string().replace('"', "");
+    //         match controlled_domains.contains(normalized_domain_name) {
+    //             true => Some(normalized_domain_name),
+    //             false => None,
+    //         }
+    //     })
+    //     .collect();
+    // let ol: Endpoints = endpoint_set.into();
     let override_list: Vec<&Value> = returned_response["rows"]
         .as_array()
         .unwrap()
         .into_iter()
         .filter(|x| {
+            let raw_domain_name = &x.get("domain").unwrap().to_string().replace('"', "");
             // TODO: This quotation replace is jank. Should be happening much earlier, ideally in Clap parsing or config construction
-            state
-                .get_domains()
-                .contains(&x.get("domain").unwrap().to_string().replace('"', ""))
+            state.get_domains().contains(raw_domain_name)
         })
         .collect();
     let ol: Endpoints = override_list.into();

@@ -14,8 +14,6 @@ pub fn app() -> Router<DynStateTrait> {
 // TODO: Look into either implementing From between reqwest errors and our custom ones
 // Possible to bubble up errors like this state.api_client.get("").await.unwrap()?
 // TODO: Look into returning more information on failure.
-// Presently only able to return 500 no body
-// TODO: Think about tuple matching or something fancier than nested match
 #[debug_handler(state = DynStateTrait)]
 pub async fn healthz_get(State(state): State<DynStateTrait>) -> impl IntoResponse {
     // TODO: There feels like a cleverer way to simply return the outcome of the api client call

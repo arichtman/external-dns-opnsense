@@ -35,11 +35,7 @@ pub fn build(cli: Cli) -> DynStateTrait {
     };
     simple_logger::init_with_level(log_level).expect("Error initialising logging, aborting.");
     // TODO: Learn best logging practices.
-    // Specifically: The debug here redundifies the info level and should we use "{:?}" or "{:#?}"
-    // How to let users configure it in the simplest way, I've seen some rely on RUST_LOG
-    debug!("{:?}", cli);
     let client = OPNsenseClient::new(cli.key, cli.secret, cli.fqdn);
-    debug!("{client:#?}");
     Arc::new(State {
         api_client: client,
         api_domains: cli.domain.into_iter().map(|d| d.replace('"', "")).collect(),
@@ -54,27 +50,34 @@ pub fn build(cli: Cli) -> DynStateTrait {
 #[cfg_attr(test, automock)]
 #[async_trait]
 pub trait StateTrait {
-    fn get_by_name(&self, name: &str) -> Result<Endpoint, InternalDataError>;
-    fn get_by_address(&self, address: &str) -> Result<Endpoint, InternalDataError>;
+    async fn get_by_name(&self, name: &str) -> Result<Endpoint, InternalDataError>;
+    async fn get_by_address(&self, address: &str) -> Result<Endpoint, InternalDataError>;
     async fn api_get(&self, resource: &str) -> Result<reqwest::Response, reqwest::Error>;
-    // fn get_domains(&self) -> Vec<String>;
-    fn get_domains(&self) -> &Vec<String>;
+    fn get_domains(&self) -> Vec<String>;
+    // async fn get_domains(&self) -> &Vec<String>;
     async fn get_all_host_overrides(&self) -> Result<reqwest::Response, reqwest::Error>;
 }
 
 #[async_trait]
 impl StateTrait for State {
-    fn get_by_name(&self, _name: &str) -> Result<Endpoint, InternalDataError> {
+    async fn get_by_name(&self, _name: &str) -> Result<Endpoint, InternalDataError> {
+        let api_results = self.api_client.get("getHostOverride").await;
+        if api_results.is_err() {
+            return Err(InternalDataError::GenericError);
+        };
         todo!()
     }
-    fn get_by_address(&self, _address: &str) -> Result<Endpoint, InternalDataError> {
+    async fn get_by_address(&self, _address: &str) -> Result<Endpoint, InternalDataError> {
         todo!()
     }
     async fn api_get(&self, resource: &str) -> Result<reqwest::Response, reqwest::Error> {
         self.api_client.get(resource).await
     }
-    fn get_domains(&self) -> &Vec<String> {
-        &self.api_domains
+    fn get_domains(&self) -> Vec<String> {
+        // TODO: this smells, we keep one copy of state and the api domains
+        //  don't change during runtime and aren't mutated either.
+        //  Maybe it's just easier than passing references around everywhere?
+        self.api_domains.clone()
     }
     async fn get_all_host_overrides(&self) -> Result<reqwest::Response, reqwest::Error> {
         self.api_client.get_all_host_overrides().await

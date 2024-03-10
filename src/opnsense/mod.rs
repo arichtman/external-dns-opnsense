@@ -12,7 +12,7 @@ pub struct OPNsenseClient {
 }
 
 // TODO: We _could_ enumerate the REST resources, but honestly it's easier as a String
-// TODO: This is getting a bit big, either shift it to a module or break it up
+// TODO: This is getting a bit big, not sure how to break it up
 //   On that note, I think another abstraction that holds the "business logic" of our
 //   API transactions makes some sense, keep the client very plain
 impl OPNsenseClient {

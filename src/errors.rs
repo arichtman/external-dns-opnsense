@@ -1,4 +1,5 @@
 pub enum InternalDataError {
     NotFound,
-    UnambiguousResult,
+    AmbiguousResult,
+    GenericError,
 }
