@@ -2,7 +2,7 @@
 #![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
 
 use axum_otel_metrics::HttpMetricsLayerBuilder;
-use data_structs::Endpoints;
+use data_structs::EDNSEndpoints;
 
 use log::debug;
 use serde_json::Value;

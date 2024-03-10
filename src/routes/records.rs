@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use crate::appstate::DynStateTrait;
-use crate::data_structs::{Changes, Endpoints};
+use crate::data_structs::{Changes, EDNSEndpoints};
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::IntoResponse;
@@ -7,7 +9,7 @@ use axum::routing::get;
 use axum::{debug_handler, Json, Router};
 use log::{debug, info};
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{to_value, Value};
 
 pub fn app() -> Router<DynStateTrait> {
     Router::new().route("/", get(records_get).post(records_post))
@@ -40,20 +42,18 @@ pub async fn records_get(
     State(state): State<DynStateTrait>,
 ) -> impl IntoResponse {
     // TODO: Work out how to match requested content-type. Middleware would be nice
-    let result = state.get_all_host_overrides().await;
+    let override_list = state.get_all_host_overrides().await;
     // Bail out early if error
-    if result.is_err() {
+    if override_list.is_err() {
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
             // TODO: Should we translate or modify this message?
             // TODO: This smells. Double-json function calls and unwraps all over?
-            Json::from(serde_json::to_value(result.unwrap_err().to_string()).unwrap()),
+            Json::from(serde_json::to_value(override_list.unwrap_err()).unwrap()),
         );
     }
-    let returned_response = Json::from(result.unwrap().json::<Value>().await.unwrap());
-    debug!("{returned_response:?}");
-    let total_records = returned_response.get("total");
-    if total_records.is_none() {
+    let override_list = override_list.unwrap();
+    if override_list.is_empty() {
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json::from(
@@ -64,48 +64,13 @@ pub async fn records_get(
             ),
         );
     }
-    let total_records = total_records.unwrap();
-    info!("Found {total_records} total host overrides, filtering to domain list...");
-    let override_list = returned_response.get("rows");
-    debug!("Initial get: {override_list:#?}");
-    if override_list.is_none() {
-        return (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json::from(
-                serde_json::to_value(
-                    "Unable to locate records in response, aborting...".to_string(),
-                )
-                .unwrap(),
-            ),
-        );
-    }
-    debug!("{:#?}", returned_response["rows"]);
-    // TODO: do we need to grab this twice? Does it matter since there's no additional API call?
-    let override_set = returned_response["rows"].as_array().unwrap();
-    let controlled_domains = state.get_domains();
-    // use crate::data_structs::Endpoint;
-    // let endpoint_set: Vec<_> = override_set
-    //     .into_iter()
-    //     .filter_map(|x| {
-    //         let normalized_domain_name = &x.get("domain").unwrap().to_string().replace('"', "");
-    //         match controlled_domains.contains(normalized_domain_name) {
-    //             true => Some(normalized_domain_name),
-    //             false => None,
-    //         }
-    //     })
-    //     .collect();
-    // let ol: Endpoints = endpoint_set.into();
-    let override_list: Vec<&Value> = returned_response["rows"]
-        .as_array()
-        .unwrap()
+    let managed_domains = state.get_domains();
+    let managed_overrides: Vec<_> = override_list
         .into_iter()
-        .filter(|x| {
-            let raw_domain_name = &x.get("domain").unwrap().to_string().replace('"', "");
-            // TODO: This quotation replace is jank. Should be happening much earlier, ideally in Clap parsing or config construction
-            state.get_domains().contains(raw_domain_name)
-        })
+        .filter(|x| state.get_domains().contains(&x.domain))
         .collect();
-    let ol: Endpoints = override_list.into();
+    let ol: EDNSEndpoints = managed_overrides.into();
+    debug!("{ol:?}");
     (StatusCode::OK, Json(serde_json::to_value(&ol).unwrap()))
 }
 

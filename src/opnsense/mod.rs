@@ -1,5 +1,11 @@
-use log::debug;
+use std::net::{IpAddr, Ipv6Addr};
 
+use log::debug;
+use serde::{Deserialize, Serialize};
+use serde_json::Map;
+
+use crate::data_structs::OPNSenseEndpoint;
+use crate::errors::OPNSenseError;
 use crate::Value;
 // TODO: Look at moving the URL parsing maybe earlier in the setup?
 // api_url could be Url type but Default isn't implemented for reqwest::Url
@@ -10,6 +16,20 @@ pub struct OPNsenseClient {
     secret: String,
     url: String,
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub enum OPNSenseRecordType {
+    A(IpAddr),
+    AAAA(Ipv6Addr),
+}
+
+// This feels weird, if we implement this it's going to be too generic an input on the signature
+// So I'm thinking we keep the transformation logic local
+// impl From<&str> for OPNSenseRecordType {
+//     fn from(input: &str) -> Self {
+
+//     }
+// }
 
 // TODO: We _could_ enumerate the REST resources, but honestly it's easier as a String
 // TODO: This is getting a bit big, not sure how to break it up
@@ -75,8 +95,34 @@ impl OPNsenseClient {
     pub async fn apply_changes(&self) -> Result<reqwest::Response, reqwest::Error> {
         self.post_raw("service/reconfigure", None).await
     }
-    pub async fn get_all_host_overrides(&self) -> Result<reqwest::Response, reqwest::Error> {
+    pub async fn get_all_host_overrides(&self) -> Result<Vec<OPNSenseEndpoint>, OPNSenseError> {
         let body = serde_json::json!({"current":1,"rowCount":-1,"sort":{"hostname":"asc"},"searchPhrase":""});
-        self.post("searchHostOverride", Some(body)).await
+        let response = self.post("searchHostOverride", Some(body)).await;
+        if response.is_err() {
+            return Err(OPNSenseError::GenericFailure);
+        }
+        let records = response
+            .expect("Error branch handled prior")
+            .json::<Map<_, _>>()
+            .await;
+        if records.is_err() {
+            return Err(OPNSenseError::UnconvertibleData);
+        };
+        let records = records.expect("Error branch handled before)");
+        let records = records.get("rows");
+        if records.is_none() {
+            return Err(OPNSenseError::NoData);
+        }
+        let records = records.expect("Error branch handled prior");
+        debug!("{records:?}");
+        let result: Vec<OPNSenseEndpoint> = records
+            .as_array()
+            .expect("Unable to retrieve returned results as an array")
+            .to_owned()
+            .into_iter()
+            .map(|x| x.into())
+            .collect();
+        debug!("{result:?}");
+        Ok(result)
     }
 }

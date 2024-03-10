@@ -6,10 +6,10 @@ use log::debug;
 // TODO: Why is Endpoint under data_structs but EndpointS isn't...
 // I think it's to do with where things are public or exported
 use crate::cli::Cli;
-use crate::data_structs::Endpoint;
-use crate::errors::InternalDataError;
+use crate::data_structs::{EDNSEndpoint, OPNSenseEndpoint};
+use crate::errors::{InternalDataError, OPNSenseError};
 use crate::opnsense::OPNsenseClient;
-use crate::Endpoints;
+use crate::EDNSEndpoints;
 #[cfg(test)]
 use mockall::automock;
 
@@ -20,7 +20,7 @@ pub type AppState = Arc<State>;
 pub struct State {
     pub api_client: OPNsenseClient,
     pub api_domains: Vec<String>,
-    pub endpoints: Endpoints,
+    pub endpoints: EDNSEndpoints,
 }
 
 pub fn build(cli: Cli) -> DynStateTrait {
@@ -50,24 +50,25 @@ pub fn build(cli: Cli) -> DynStateTrait {
 #[cfg_attr(test, automock)]
 #[async_trait]
 pub trait StateTrait {
-    async fn get_by_name(&self, name: &str) -> Result<Endpoint, InternalDataError>;
-    async fn get_by_address(&self, address: &str) -> Result<Endpoint, InternalDataError>;
+    async fn get_by_name(&self, name: &str) -> Result<EDNSEndpoint, InternalDataError>;
+    async fn get_by_address(&self, address: &str) -> Result<EDNSEndpoint, InternalDataError>;
     async fn api_get(&self, resource: &str) -> Result<reqwest::Response, reqwest::Error>;
     fn get_domains(&self) -> Vec<String>;
     // async fn get_domains(&self) -> &Vec<String>;
-    async fn get_all_host_overrides(&self) -> Result<reqwest::Response, reqwest::Error>;
+    async fn get_all_host_overrides(&self) -> Result<Vec<OPNSenseEndpoint>, OPNSenseError>;
 }
 
 #[async_trait]
 impl StateTrait for State {
-    async fn get_by_name(&self, _name: &str) -> Result<Endpoint, InternalDataError> {
-        let api_results = self.api_client.get("getHostOverride").await;
+    async fn get_by_name(&self, _name: &str) -> Result<EDNSEndpoint, InternalDataError> {
+        let api_results = &self.api_client.get_all_host_overrides().await;
         if api_results.is_err() {
             return Err(InternalDataError::GenericError);
         };
+        debug!("API results: {api_results:?}");
         todo!()
     }
-    async fn get_by_address(&self, _address: &str) -> Result<Endpoint, InternalDataError> {
+    async fn get_by_address(&self, _address: &str) -> Result<EDNSEndpoint, InternalDataError> {
         todo!()
     }
     async fn api_get(&self, resource: &str) -> Result<reqwest::Response, reqwest::Error> {
@@ -79,7 +80,7 @@ impl StateTrait for State {
         //  Maybe it's just easier than passing references around everywhere?
         self.api_domains.clone()
     }
-    async fn get_all_host_overrides(&self) -> Result<reqwest::Response, reqwest::Error> {
+    async fn get_all_host_overrides(&self) -> Result<Vec<OPNSenseEndpoint>, OPNSenseError> {
         self.api_client.get_all_host_overrides().await
     }
 }
