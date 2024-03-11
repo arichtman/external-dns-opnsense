@@ -24,15 +24,15 @@ Concrete TODOs
 - Add info, trace and warn debug logging
 - Pull business logic out into it's own module
 - Use with_state to limit state only to routes that need it
-- Review all `// TODO` with mentor
+- Review all `// Q:` with mentor
 - See about git hooks and some CI checks.
   `rusty-hook` isn't greaaat but works.
 - Review all uses of `unwrap`
 - Add tracing / "proper" o11y stuff
 - Add OpenAPI spec generation?
   Maybe better to add verification/contract testing
-- Find a nice way to strip all quotes on Clap arguments
-- Consider caching health checks
+- Find a nice way to strip all quotes on Clap arguments/environment variables
+- Consider caching health checks for a short period
 - Put OPNsense CRUD logic into the client struct implementation?
   This is less clear now we're using the trait object
 - Set derive macros to only apply during test/debug builds

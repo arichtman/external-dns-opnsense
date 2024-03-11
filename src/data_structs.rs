@@ -9,8 +9,7 @@ use serde_json::Value;
 
 use crate::opnsense::OPNSenseRecordType;
 
-// TODO: see if we can use the ! whole-file approach
-// Probably a bad idea since it'll bloat the code...
+// Q: If we use the ! notation to derive for everything in the module, that'll bloat the code too much right?
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Changes {
     create: EDNSEndpoints,
@@ -22,7 +21,7 @@ pub struct Changes {
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct EDNSEndpoints(Vec<EDNSEndpoint>);
 
-// TODO: There must be a way to leverage one of these into the other
+// Q: There must be a way to leverage one of these into the other
 impl From<Vec<Value>> for EDNSEndpoints {
     fn from(data: Vec<Value>) -> Self {
         let endpoints: Vec<EDNSEndpoint> = data.into_iter().map(|x| (&x).into()).collect();
@@ -36,7 +35,7 @@ impl From<Vec<&Value>> for EDNSEndpoints {
     }
 }
 
-// TODO: I'm kindof keeping everything stringy for now so that these serialize nicely
+// Note: I'm kindof keeping everything stringy for now so that these serialize nicely
 //  into our request bodies. Though part of me is itching to reduce the Stringly-typeyness
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct OPNSenseEndpoint {
@@ -53,7 +52,7 @@ pub struct OPNSenseEndpoint {
 
 impl From<Value> for OPNSenseEndpoint {
     fn from(data: Value) -> Self {
-        // TODO: Surely the derive deserialize should handle this...
+        // Q: Surely the derive deserialize should handle this...
         debug!("{data:?}");
         OPNSenseEndpoint {
             uuid: data.get("uuid").unwrap().as_str().unwrap().to_string(),
@@ -63,7 +62,7 @@ impl From<Value> for OPNSenseEndpoint {
                 .as_str()
                 .expect("Field should be String type")
                 .to_string(),
-            // TODO: This seems _very_ verbose for just getting it without quotes...
+            // Q: This seems _very_ verbose for just getting it without quotes...
             hostname: data.get("hostname").unwrap().as_str().unwrap().to_string(),
             domain: data["domain"].as_str().unwrap().to_string(),
             rr: data.get("rr").unwrap().as_str().unwrap().to_string(),

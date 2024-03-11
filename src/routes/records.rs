@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
+use super::REPLY_HEADERS;
 use crate::appstate::DynStateTrait;
 use crate::data_structs::{Changes, EDNSEndpoints};
 use axum::extract::State;
-use axum::http::{HeaderMap, StatusCode};
+use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{debug_handler, Json, Router};
@@ -37,18 +38,15 @@ struct HostOverride {
 }
 
 #[debug_handler(state = DynStateTrait)]
-pub async fn records_get(
-    // headers: HeaderMap,
-    State(state): State<DynStateTrait>,
-) -> impl IntoResponse {
-    // TODO: Work out how to match requested content-type. Middleware would be nice
+pub async fn records_get(State(state): State<DynStateTrait>) -> impl IntoResponse {
     let override_list = state.get_all_host_overrides().await;
     // Bail out early if error
     if override_list.is_err() {
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
-            // TODO: Should we translate or modify this message?
-            // TODO: This smells. Double-json function calls and unwraps all over?
+            REPLY_HEADERS,
+            // Q: Should we translate or modify this message?
+            // Q: This smells. Double-json function calls and unwraps all over?
             Json::from(serde_json::to_value(override_list.unwrap_err()).unwrap()),
         );
     }
@@ -56,6 +54,7 @@ pub async fn records_get(
     if override_list.is_empty() {
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
+            REPLY_HEADERS,
             Json::from(
                 serde_json::to_value(
                     "Unable to locate total record count, aborting...".to_string(),
@@ -71,7 +70,11 @@ pub async fn records_get(
         .collect();
     let ol: EDNSEndpoints = managed_overrides.into();
     debug!("{ol:?}");
-    (StatusCode::OK, Json(serde_json::to_value(&ol).unwrap()))
+    (
+        StatusCode::OK,
+        REPLY_HEADERS,
+        Json(serde_json::to_value(&ol).unwrap()),
+    )
 }
 
 #[debug_handler(state = DynStateTrait)]
@@ -79,8 +82,6 @@ pub async fn records_post(
     State(_state): State<DynStateTrait>,
     Json(_body): Json<Changes>,
 ) -> impl IntoResponse {
-    // TODO: Should we put any response body?
-    // Need to return 204 on success, according to the docs
-    (StatusCode::NO_CONTENT, Json("Accepted"))
-    // StatusCode::NO_CONTENT
+    todo!();
+    (StatusCode::NO_CONTENT, REPLY_HEADERS)
 }

@@ -8,7 +8,7 @@ use log::debug;
 use serde_json::Value;
 use tokio::net::TcpListener;
 
-// TODO: This seems tedious mod-ing everything. Is this correct?
+// Q: This seems tedious mod-ing everything. Is this correct?
 mod appstate;
 mod cli;
 mod data_structs;
@@ -18,7 +18,7 @@ mod routes;
 
 #[tokio::main]
 async fn main() {
-    // TODO: I'm not sure about how we've separated cli and appstate building, mostly by the amount of imports they all have to do which feels like a lot of coupling/shared knowledge?
+    // Q: I'm not sure about how we've separated cli and appstate building, mostly by the amount of imports they all have to do which feels like a lot of coupling/shared knowledge?
     let state = crate::appstate::build(cli::get());
     let listener = TcpListener::bind("[::]:8888").await.unwrap();
     let metrics = HttpMetricsLayerBuilder::new()
@@ -48,7 +48,7 @@ mod tests {
     use axum::http::{Request, StatusCode};
     use mockall::predicate::*;
     use tower::util::ServiceExt;
-    // TODO: Should these have prefix crate:: or is this fine?
+    // Q: Should these have prefix crate:: or is this fine?
     // use appstate::AppState;
     use crate::appstate::{DynStateTrait, MockStateTrait};
     use routes::app;

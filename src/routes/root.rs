@@ -8,6 +8,8 @@ use serde::Serialize;
 
 use crate::appstate::DynStateTrait;
 
+use super::REPLY_HEADERS;
+
 pub fn app() -> Router<DynStateTrait> {
     Router::new().route("/", get(root_get))
 }
@@ -24,12 +26,5 @@ pub async fn root_get(State(state): State<DynStateTrait>) -> impl IntoResponse {
         filters: state.get_domains(),
     };
     // TODO: think about the arc and whether static stuff like domains list should be arc
-    (
-        [(
-            header::CONTENT_TYPE,
-            // TODO: again, should this match the request or will it always be this?
-            "application/external.dns.webhook+json;version=1",
-        )],
-        Json::from(reply),
-    )
+    (REPLY_HEADERS, Json::from(reply))
 }

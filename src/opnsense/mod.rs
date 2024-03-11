@@ -7,6 +7,7 @@ use serde_json::Map;
 use crate::data_structs::OPNSenseEndpoint;
 use crate::errors::OPNSenseError;
 use crate::Value;
+
 // TODO: Look at moving the URL parsing maybe earlier in the setup?
 // api_url could be Url type but Default isn't implemented for reqwest::Url
 #[derive(Clone, Default, Debug)]
@@ -23,16 +24,8 @@ pub enum OPNSenseRecordType {
     AAAA(Ipv6Addr),
 }
 
-// This feels weird, if we implement this it's going to be too generic an input on the signature
-// So I'm thinking we keep the transformation logic local
-// impl From<&str> for OPNSenseRecordType {
-//     fn from(input: &str) -> Self {
-
-//     }
-// }
-
-// TODO: We _could_ enumerate the REST resources, but honestly it's easier as a String
-// TODO: This is getting a bit big, not sure how to break it up
+// Q: We _could_ enumerate the REST resources, but honestly it's easier as a String?
+// Q: This is getting a bit big, not sure how to break it up
 //   On that note, I think another abstraction that holds the "business logic" of our
 //   API transactions makes some sense, keep the client very plain
 impl OPNsenseClient {
@@ -81,14 +74,14 @@ impl OPNsenseClient {
             .request(method, format!("{0}/api/unbound/{1}", self.url, resource));
         let req_builder = req_builder.basic_auth(&self.key, Some(&self.secret));
         let req = match body {
-            // TODO: This is a bit convoluted but I'd prefer to take in serde_json::Value over std::String
+            // Note: This is a bit convoluted but I'd prefer to take in serde_json::Value over std::String
             Some(s) => req_builder.body(serde_json::to_string(&s).unwrap()),
             None => req_builder,
         }
         .build()
         .unwrap();
         debug!("{req:?}");
-        // TODO: Not sure if this is the right approach, but changing the function signature to just Response doesn't capture that it can fail.
+        // Q: Not sure if this is the right approach, but changing the function signature to just Response doesn't capture that it can fail.
         //   Maybe it's an async thing?
         Ok(self.client.execute(req).await?)
     }

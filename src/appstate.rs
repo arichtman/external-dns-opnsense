@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::async_trait;
 use log::debug;
 
-// TODO: Why is Endpoint under data_structs but EndpointS isn't...
+// Q: Why is Endpoint under data_structs but EndpointS isn't...
 // I think it's to do with where things are public or exported
 use crate::cli::Cli;
 use crate::data_structs::{EDNSEndpoint, OPNSenseEndpoint};
@@ -14,8 +14,8 @@ use crate::EDNSEndpoints;
 use mockall::automock;
 
 pub type AppState = Arc<State>;
-// TODO: I _think_ we want ownership here cause we don't want lifetime issues when other stuff drops out of scope
-// TODO: Can/should we make this private?
+// Q: I _think_ we want ownership here cause we don't want lifetime issues when other stuff drops out of scope
+// Q: Can/should we make this private?
 #[derive(Clone, Default, Debug)]
 pub struct State {
     pub api_client: OPNsenseClient,
@@ -24,8 +24,8 @@ pub struct State {
 }
 
 pub fn build(cli: Cli) -> DynStateTrait {
-    // TODO: Is this the idiomatic way to handle it?
-    // TODO: Maybe move this into the cli module?
+    // Q: Is this the idiomatic way to handle it?
+    // Q: Would this be more appropriate in the cli module?
     let log_level = match cli.verbose {
         0 => log::Level::Error,
         1 => log::Level::Warn,
@@ -42,10 +42,11 @@ pub fn build(cli: Cli) -> DynStateTrait {
         ..Default::default()
     }) as DynStateTrait
 }
-// TODO: Is wrapping all the client logic really the right way?
+// Q: Is wrapping all the client logic really the right way?
 // Perhaps we should pull it out of the OPNsense client.
 // But then it's not as cohesive and nice... It doesn't make sense for the state trait to have that interface at all
 // Should we just give a generic get_client() and use that?
+
 // Use a trait to decouple data access layer
 #[cfg_attr(test, automock)]
 #[async_trait]
@@ -75,7 +76,7 @@ impl StateTrait for State {
         self.api_client.get(resource).await
     }
     fn get_domains(&self) -> Vec<String> {
-        // TODO: this smells, we keep one copy of state and the api domains
+        // Q: this smells, we keep one copy of state and the api domains
         //  don't change during runtime and aren't mutated either.
         //  Maybe it's just easier than passing references around everywhere?
         self.api_domains.clone()
