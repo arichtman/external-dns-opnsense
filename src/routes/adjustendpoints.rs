@@ -1,5 +1,8 @@
 use axum::extract::State;
 
+use super::REPLY_HEADERS;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use axum::routing::post;
 use axum::{debug_handler, Json, Router};
 use serde_json::Value;
@@ -19,8 +22,7 @@ pub fn app() -> Router<DynStateTrait> {
 pub async fn adjustendpoints_post(
     State(_state): State<DynStateTrait>,
     _body: Json<Value>,
-) -> Result<Json<Value>, String> {
-    // Need to return 200 on success
-    // Ok(Json::from(json!({"500": "bzzzzt"})))
-    Err("500".into())
+) -> impl IntoResponse {
+    todo!();
+    (StatusCode::INTERNAL_SERVER_ERROR, REPLY_HEADERS)
 }
