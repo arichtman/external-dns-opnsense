@@ -1,16 +1,13 @@
-use std::collections::HashMap;
-
 use super::REPLY_HEADERS;
 use crate::appstate::DynStateTrait;
 use crate::data_structs::{Changes, EDNSEndpoints};
 use axum::extract::State;
-use axum::http::{header, HeaderMap, StatusCode};
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{debug_handler, Json, Router};
-use log::{debug, info};
+use log::debug;
 use serde::Deserialize;
-use serde_json::{to_value, Value};
 
 pub fn app() -> Router<DynStateTrait> {
     Router::new().route("/", get(records_get).post(records_post))
@@ -63,7 +60,7 @@ pub async fn records_get(State(state): State<DynStateTrait>) -> impl IntoRespons
             ),
         );
     }
-    let managed_domains = state.get_domains();
+    let _managed_domains = state.get_domains();
     let managed_overrides: Vec<_> = override_list
         .into_iter()
         .filter(|x| state.get_domains().contains(&x.domain))

@@ -3,7 +3,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
-use axum::{debug_handler, Json, Router};
+use axum::{debug_handler, Router};
 use log::debug;
 
 use crate::appstate::DynStateTrait;

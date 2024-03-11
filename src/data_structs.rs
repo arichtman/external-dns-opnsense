@@ -4,10 +4,8 @@
 use std::collections::HashMap;
 
 use log::debug;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
-
-use crate::opnsense::OPNSenseRecordType;
 
 // Q: If we use the ! notation to derive for everything in the module, that'll bloat the code too much right?
 #[derive(Deserialize, Serialize, Debug, Clone)]
