@@ -7,7 +7,7 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{debug_handler, Json, Router};
 use serde::Deserialize;
-use tracing::debug;
+use tracing::{debug, event, info_span, span, Level};
 
 pub fn app() -> Router<DynStateTrait> {
     Router::new().route("/", get(records_get).post(records_post))
@@ -36,7 +36,13 @@ struct HostOverride {
 
 #[debug_handler(state = DynStateTrait)]
 pub async fn records_get(State(state): State<DynStateTrait>) -> impl IntoResponse {
+    let span = span!(Level::INFO, "records_get");
+    let _guard = span.enter();
+    // Q: Why doesn't the short form satisfy trait bounds?
+    // let _span = info_span!("records_get").entered();
+    // let _span = span!(Level::INFO, "records_get").entered();
     let override_list = state.get_all_host_overrides().await;
+    event!(Level::DEBUG, "retrieved overrides");
     // Bail out early if error
     if override_list.is_err() {
         return (
@@ -61,6 +67,7 @@ pub async fn records_get(State(state): State<DynStateTrait>) -> impl IntoRespons
         );
     }
     let _managed_domains = state.get_domains();
+    event!(Level::DEBUG, "retrieved domains");
     let managed_overrides: Vec<_> = override_list
         .into_iter()
         .filter(|x| state.get_domains().contains(&x.domain))
