@@ -4,7 +4,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{debug_handler, Router};
-use log::debug;
+use tracing::debug;
 
 use crate::appstate::DynStateTrait;
 

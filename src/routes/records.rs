@@ -6,8 +6,8 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{debug_handler, Json, Router};
-use log::debug;
 use serde::Deserialize;
+use tracing::debug;
 
 pub fn app() -> Router<DynStateTrait> {
     Router::new().route("/", get(records_get).post(records_post))

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::async_trait;
-use log::debug;
+use tracing::debug;
 
 // Q: Why is Endpoint under data_structs but EndpointS isn't...
 // I think it's to do with where things are public or exported
@@ -24,17 +24,6 @@ pub struct State {
 }
 
 pub fn build(cli: Cli) -> DynStateTrait {
-    // Q: Is this the idiomatic way to handle it?
-    // Q: Would this be more appropriate in the cli module?
-    let log_level = match cli.verbose {
-        0 => log::Level::Error,
-        1 => log::Level::Warn,
-        2 => log::Level::Info,
-        3 => log::Level::Debug,
-        4.. => log::Level::Trace,
-    };
-    simple_logger::init_with_level(log_level).expect("Error initialising logging, aborting.");
-    // TODO: Learn best logging practices.
     let client = OPNsenseClient::new(cli.key, cli.secret, cli.fqdn);
     Arc::new(State {
         api_client: client,

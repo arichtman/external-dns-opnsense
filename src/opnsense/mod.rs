@@ -1,8 +1,8 @@
 use std::net::{IpAddr, Ipv6Addr};
 
-use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
+use tracing::debug;
 
 use crate::data_structs::OPNSenseEndpoint;
 use crate::errors::OPNSenseError;

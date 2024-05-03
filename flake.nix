@@ -61,6 +61,8 @@
             rust-analyzer
             bacon
             yq-go
+            # Required for error ld: framework not found SystemConfiguration
+            darwin.apple_sdk.frameworks.SystemConfiguration
           ];
         };
       });

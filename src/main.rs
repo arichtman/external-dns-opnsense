@@ -1,11 +1,16 @@
 // TODO: Remove for production
 #![allow(dead_code, unused_imports, unused_variables, unreachable_code)]
 
+use std::io;
+use std::net::Ipv6Addr;
+
 use axum_otel_metrics::HttpMetricsLayerBuilder;
 use data_structs::EDNSEndpoints;
 
 use serde_json::Value;
 use tokio::net::TcpListener;
+
+use tracing::debug;
 
 // Q: This seems tedious mod-ing everything. Is this correct?
 mod appstate;
@@ -16,10 +21,28 @@ mod opnsense;
 mod routes;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> io::Result<()> {
+    let cli_opts = cli::get();
+    // Initialize telemetry/logging
+    let max_log_level = match cli_opts.verbose {
+        0 => tracing::Level::ERROR,
+        1 => tracing::Level::WARN,
+        2 => tracing::Level::INFO,
+        3 => tracing::Level::DEBUG,
+        4.. => tracing::Level::TRACE,
+    };
+    let subscriber = tracing_subscriber::FmtSubscriber::builder()
+        .with_max_level(max_log_level)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+
+    // immediately output some debugging information
+    debug!("Options: {cli_opts:?}");
+    debug!("Max log level: {max_log_level}");
+
+    let listener = TcpListener::bind((Ipv6Addr::UNSPECIFIED, cli_opts.port)).await?;
     // Q: I'm not sure about how we've separated cli and appstate building, mostly by the amount of imports they all have to do which feels like a lot of coupling/shared knowledge?
-    let state = crate::appstate::build(cli::get());
-    let listener = TcpListener::bind("[::]:8888").await.unwrap();
+    let state = crate::appstate::build(cli_opts);
     let metrics = HttpMetricsLayerBuilder::new()
         .with_service_name(env!("CARGO_PKG_NAME").into())
         .with_service_version(env!("CARGO_PKG_VERSION").into())
@@ -33,7 +56,6 @@ async fn main() {
             .into_make_service(),
     )
     .await
-    .unwrap();
 }
 
 // Ref: https://github.com/tokio-rs/axum/blob/main/examples/testing/src/main.rs
